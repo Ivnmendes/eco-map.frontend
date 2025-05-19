@@ -2,8 +2,8 @@ import 'dotenv/config';
 
 export default {
   expo: {
-    name: "EcoPontoApp",
-    slug: "eco-ponto-app",
+    name: "Eco Map",
+    slug: "eco-map-app",
     version: "1.0.0",
     sdkVersion: "50.0.0",
     extra: {
