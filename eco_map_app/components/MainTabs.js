@@ -28,7 +28,7 @@ export default function MainTabs() {
         },
         headerShown: false,
         tabBarActiveTintColor: 'white',
-        tabBarInactiveTintColor: 'gray',
+        tabBarInactiveTintColor: '#9c9a9a',
         tabBarStyle: { 
           position: 'absolute',
           height: 120,

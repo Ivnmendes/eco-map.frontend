@@ -8,9 +8,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 
+import { DataProvider } from './context/DataContext';
+
 import MainTabs from './components/MainTabs'
 
 import { verifyOrRefreshTokens } from './utils/auth.js';
+import AddPointForm from './screens/AddPointForm.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -35,23 +38,27 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {isAuthenticated ? (
-            <>
-              <Stack.Screen name="Main" component={MainTabs} />
-              <Stack.Screen name="Login" component={LoginScreen} />
-              <Stack.Screen name="Register" component={RegisterScreen} />
-            </>
-          ) : (
-            <>
-              <Stack.Screen name="Login" component={LoginScreen} />
-              <Stack.Screen name="Register" component={RegisterScreen} />
-              <Stack.Screen name="Main" component={MainTabs} />
-            </>
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
+      <DataProvider>  
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {isAuthenticated ? (
+              <>
+                <Stack.Screen name="Main" component={MainTabs} />
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Register" component={RegisterScreen} />
+                <Stack.Screen name="AddPointForm" component={AddPointForm} />
+              </>
+            ) : (
+              <>
+                <Stack.Screen name="Login" component={LoginScreen} />
+                <Stack.Screen name="Register" component={RegisterScreen} />
+                <Stack.Screen name="Main" component={MainTabs} />
+                <Stack.Screen name="AddPointForm" component={AddPointForm} />
+              </>
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </DataProvider>
     </SafeAreaProvider>
   );
 }

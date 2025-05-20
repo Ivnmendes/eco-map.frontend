@@ -1,16 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
-import MapView from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 
 import { getAccessToken } from '../utils/auth';
 import { API_URL } from '../constants';
 
+import { DataContext } from '../context/DataContext'
+
 export default function HomeScreen({ navigation }) {
-    const [loading, setLoading] = useState(false);
     const [loadingLocation, setLoadingLocation] = useState(false);
+    const [loadingPoints, setLoadingPoints] = useState(false);
     const [region, setRegion] = useState({
         latitude: -29.7137724,
         longitude: -53.7162037,
@@ -18,8 +20,18 @@ export default function HomeScreen({ navigation }) {
         longitudeDelta: 0.01,
     });
     const [hasPermission, setHasPermission] = useState(false);
+    const { collectionPoints, fetchCollectionPoints, collectionTypes } = useContext(DataContext);
+
+    async function reloadFetchCollectionPoints() {
+        setLoadingPoints(true);
+
+        await fetchCollectionPoints();
+
+        setLoadingPoints(false);
+    }
 
     useEffect(() => {
+        reloadFetchCollectionPoints();
         (async () => {
           const { status } = await Location.requestForegroundPermissionsAsync();
           setHasPermission(status === 'granted');
@@ -30,6 +42,29 @@ export default function HomeScreen({ navigation }) {
     }, []);
 
     const mapRef = useRef(null);
+
+    async function handleAddPoint() {
+        try {
+            setLoadingLocation(true);
+            if (!hasPermission) {
+                Alert.alert('Permissão não concedida');
+                setLoadingLocation(false);
+                return;
+            }
+
+            const loc = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.High
+            });
+
+            navigation.navigate('AddPointForm', {
+                latitude: loc.coords.latitude,
+                longitude: loc.coords.longitude
+            });
+        } catch (error) {
+            setLoadingLocation(false);
+            Alert.alert('Erro', 'Não foi possível obter a localização');
+        }
+    }
 
     async function updateLocation() {
         setLoadingLocation(true);
@@ -65,13 +100,38 @@ export default function HomeScreen({ navigation }) {
                 ref={mapRef}
                 style={StyleSheet.absoluteFillObject}
                 initialRegion={region}
-            />
-            <TouchableOpacity style={styles.floatingButton} onPress={ updateLocation } disabled={loadingLocation}>
+            >
+                {collectionPoints && collectionPoints.results && collectionPoints.results.map(point => (
+                    <Marker
+                        key={point.id}
+                        coordinate={{
+                            latitude: Number(point.latitude),
+                            longitude: Number(point.longitude)
+                        }}
+                        title={point.name}
+                        description={point.description}
+                    />
+                ))}
+            </MapView>
+            <TouchableOpacity style={styles.floatingButton} onPress={ updateLocation } disabled={ loadingLocation }>
                 {loadingLocation ? (
                     <ActivityIndicator size="small" color="#fff" />
                     ) : (
                     <Ionicons name="locate-outline" size={28} color="#fff" />
                 )}
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.floatingButton, styles.floatingButtonReload]} onPress={ reloadFetchCollectionPoints } disabled={loadingPoints}>
+                {loadingPoints ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                    <Ionicons name="reload-outline" size={28} color="#fff" />
+                )}
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.floatingButton, styles.floatingButtonAdd]} onPress={ handleAddPoint }>
+                <Ionicons name="add-circle-outline" size={28} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.floatingButton, styles.floatingButtonFilter]} onPress={ () => {} }>
+                <Ionicons name="filter-circle-outline" size={28} color="#fff" />
             </TouchableOpacity>
         </View>
     )
@@ -94,4 +154,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 3,
       },
+      floatingButtonReload: {
+        bottom: 220,
+      },
+      floatingButtonAdd: {
+        bottom: 300,
+      }, 
+      floatingButtonFilter: {
+        bottom: 380
+      }
 });

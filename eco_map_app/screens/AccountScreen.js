@@ -13,18 +13,16 @@ export default function HomeScreen({ navigation }) {
         try {
             const access = await getAccessToken();
             const refresh = await getRefreshToken();
-console.log('refresh:', refresh);
-
 
             await axios.post(
                 `${API_URL}/accounts/logout/`,
                 { refresh },
                 {
-                  headers: {
-                    Authorization: `Bearer ${access}`
-                  },
+                    headers: {
+                        Authorization: `Bearer ${access}`
+                    },
                 }
-              );
+            );
             await clearTokens();
             navigation.replace('Login');
         } catch (error) {
