@@ -39,7 +39,7 @@ export default function LoginScreen({ navigation }) {
                 access: response.data.access,
                 refresh: response.data.refresh,
                 });
-                navigation.replace('Home');
+                navigation.replace('Main');
             } catch (error) {
                 Alert.alert('Erro', 'Login falhou. Verifique suas credenciais.');
             } finally {

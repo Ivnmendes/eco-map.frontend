@@ -54,7 +54,7 @@ export default function LoginScreen({ navigation }) {
                     refresh: response.data.refresh,
                 });
 
-                navigation.replace('Home');
+                navigation.replace('Main');
             } catch (error) {
                 Alert.alert('Erro', 'Registro de conta falhou. Verifique os campos.');
             } finally {
