@@ -50,6 +50,9 @@ export default function LoginScreen({ navigation }) {
 
     return (
         <View style={styles.container}>
+            <View style={styles.labelContainer}>
+                <Text style={styles.label}>Email</Text>
+            </View>
             <TextInput
                 placeholder="Email"
                 value={email}
@@ -58,6 +61,9 @@ export default function LoginScreen({ navigation }) {
                 keyboardType="email-address"
                 autoCapitalize="none"
             />
+            <View style={styles.labelContainer}>
+                <Text style={styles.label}>Senha</Text>
+            </View>
             <TextInput
                 placeholder="Senha"
                 value={password}
@@ -93,8 +99,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center', 
         padding: 16 
     },
+    labelContainer: {
+        alignSelf: 'flex-start',
+        marginLeft: '55'
+    },
     input: {
-        width: '95%',
+        width: '75%',
         borderWidth: 1,
         borderColor: '#888',
         marginBottom: 12,
@@ -106,7 +116,7 @@ const styles = StyleSheet.create({
         color: 'red'
     },
     customButton: {
-        width: '70%',
+        width: '50%',
         backgroundColor: '#4CAF50',
         padding: 12,
         borderRadius: 8,

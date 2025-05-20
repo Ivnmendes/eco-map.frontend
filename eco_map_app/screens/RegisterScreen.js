@@ -65,20 +65,27 @@ export default function LoginScreen({ navigation }) {
 
     return (
         <View style={styles.container}>
+            <View style={styles.labelContainer}>
+                <Text style={styles.label}>Primeiro nome</Text>
+            </View>
             <TextInput
                 placeholder="Primeiro nome"
                 value={firstName}
                 onChangeText={setFirstName}
                 style={[styles.input, errors.firstName && styles.inputError]}
-                autoCapitalize="none"
             />
+            <View style={styles.labelContainer}>
+                <Text style={styles.label}>Último nome</Text>
+            </View>
             <TextInput
                 placeholder="Último nome"
                 value={lastName}
                 onChangeText={setLastName}
                 style={[styles.input, errors.lastName && styles.inputError]}
-                autoCapitalize="none"
             />
+            <View style={styles.labelContainer}>
+                <Text style={styles.label}>Email</Text>
+            </View>
             <TextInput
                 placeholder="Email"
                 value={email}
@@ -87,6 +94,9 @@ export default function LoginScreen({ navigation }) {
                 keyboardType="email-address"
                 autoCapitalize="none"
             />
+            <View style={styles.labelContainer}>
+                <Text style={styles.label}>Senha</Text>
+            </View>
             <View style={styles.passwordContainer}>
                 <TextInput
                     placeholder="Senha"
@@ -101,6 +111,9 @@ export default function LoginScreen({ navigation }) {
                 >
                 <Text style={styles.showButtonText}>{showPassword ? 'Ocultar' : 'Mostrar'}</Text>
                 </TouchableOpacity>
+            </View>
+            <View style={styles.labelContainer}>
+                <Text style={styles.label}>Confirme sua senha</Text>
             </View>
             <View style={styles.passwordContainer}>
                 <TextInput
@@ -145,6 +158,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center', 
         padding: 16,
+    },
+    labelContainer: {
+        alignSelf: 'flex-start',
+        marginLeft: '55'
     },
     input: {
         width: '75%',

@@ -14,7 +14,7 @@ export default function HomeScreen({ navigation }) {
             const access = await getAccessToken();
             const refresh = await getRefreshToken();
 
-            const response = await axios.post(
+            await axios.post(
                 `${API_URL}/accounts/logout/`,
                 { refresh },
                 {
