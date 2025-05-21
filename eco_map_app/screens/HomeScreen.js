@@ -1,8 +1,9 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { View, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Animated, FlatList } from 'react-native';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
+import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
 
 import { getAccessToken } from '../utils/auth';
@@ -21,6 +22,65 @@ export default function HomeScreen({ navigation }) {
     });
     const [hasPermission, setHasPermission] = useState(false);
     const { collectionPoints, fetchCollectionPoints, collectionTypes } = useContext(DataContext);
+    const { loadInitialData } = useContext(DataContext);
+    const isFirstLoad = useRef(true);
+    const [expanded, setExpanded] = useState(false);
+    const animation = useRef(new Animated.Value(0)).current;
+
+    export default function CollectionTypeCarousel({ onSelectCollectionType }) {
+        const [selectedId, setSelectedId] = useState(null);
+      
+        function handleSelect(id) {
+          setSelectedId(id);
+          if(onSelectCollectionType) onSelectCollectionType(id);
+        }
+
+        const renderItem = ({ item }) => {
+            const isSelected = item.id === selectedId;
+            return (
+              <TouchableOpacity
+                onPress={() => handleSelect(item.id)}
+                style={[styles.button, isSelected && styles.buttonSelected]}
+              >
+                <Ionicons name={item.icon} size={24} color={isSelected ? '#fff' : '#333'} />
+                <Text style={[styles.text, isSelected && styles.textSelected]}>{item.name}</Text>
+              </TouchableOpacity>
+            );
+    }
+        
+    const toggleExpand = () => {
+        animation.stopAnimation(() => {
+          Animated.timing(animation, {
+            toValue: expanded ? 0 : 1,
+            duration: 350,
+            useNativeDriver: true,
+          }).start(() => {
+            setExpanded(!expanded);
+          });
+        });
+    };
+
+    const getButtonStyle = (offsetY) => ({
+        opacity: animation,
+        transform: [
+          {
+            translateY: animation.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, -offsetY],
+            }),
+          },
+        ],
+    });
+      
+
+    useFocusEffect(
+        React.useCallback(() => {
+          if (isFirstLoad.current) {
+            loadInitialData();
+            isFirstLoad.current = false;
+          }
+        }, [])
+    );
 
     async function reloadFetchCollectionPoints() {
         setLoadingPoints(true);
@@ -53,7 +113,7 @@ export default function HomeScreen({ navigation }) {
             }
 
             const loc = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.High
+                accuracy: Location.Accuracy.Low
             });
 
             navigation.navigate('AddPointForm', {
@@ -61,12 +121,13 @@ export default function HomeScreen({ navigation }) {
                 longitude: loc.coords.longitude
             });
         } catch (error) {
-            setLoadingLocation(false);
             Alert.alert('Erro', 'Não foi possível obter a localização');
+        } finally {
+            setLoadingLocation(false);
         }
     }
 
-    async function updateLocation() {
+    async function handleUpdateLocation() {
         setLoadingLocation(true);
 
         try {
@@ -87,7 +148,6 @@ export default function HomeScreen({ navigation }) {
 
             setRegion(newRegion);
             mapRef.current?.animateToRegion(newRegion, 500);
-
             setLoadingLocation(false)
         } catch (error) {
             Alert.alert('Erro', 'Não foi possível obter a localização');
@@ -100,6 +160,8 @@ export default function HomeScreen({ navigation }) {
                 ref={mapRef}
                 style={StyleSheet.absoluteFillObject}
                 initialRegion={region}
+                showsUserLocation
+                showsMyLocationButton={false}
             >
                 {collectionPoints && collectionPoints.results && collectionPoints.results.map(point => (
                     <Marker
@@ -113,54 +175,83 @@ export default function HomeScreen({ navigation }) {
                     />
                 ))}
             </MapView>
-            <TouchableOpacity style={styles.floatingButton} onPress={ updateLocation } disabled={ loadingLocation }>
+
+            <TouchableOpacity style={[styles.floatingButton, styles.floatingButtonUpdate]} onPress={ handleUpdateLocation } disabled={ loadingLocation }>
                 {loadingLocation ? (
                     <ActivityIndicator size="small" color="#fff" />
                     ) : (
                     <Ionicons name="locate-outline" size={28} color="#fff" />
                 )}
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.floatingButton, styles.floatingButtonReload]} onPress={ reloadFetchCollectionPoints } disabled={loadingPoints}>
-                {loadingPoints ? (
+
+            <TouchableOpacity
+                style={[styles.floatingButton, styles.floatingButtonExpand]}
+                onPress={toggleExpand}
+            >
+                <Ionicons name={expanded ? "close" : "ellipsis-vertical"} size={28} color="#fff" />
+            </TouchableOpacity>
+
+            <Animated.View pointerEvents={expanded ? 'auto' : 'none'} style={[styles.animatedButtonContainer, getButtonStyle(220)]}>
+                <TouchableOpacity style={styles.floatingButton} onPress={reloadFetchCollectionPoints} disabled={loadingPoints}>
+                    {loadingPoints ? (
                     <ActivityIndicator size="small" color="#fff" />
                     ) : (
                     <Ionicons name="reload-outline" size={28} color="#fff" />
-                )}
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.floatingButton, styles.floatingButtonAdd]} onPress={ handleAddPoint }>
-                <Ionicons name="add-circle-outline" size={28} color="#fff" />
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.floatingButton, styles.floatingButtonFilter]} onPress={ () => {} }>
-                <Ionicons name="filter-circle-outline" size={28} color="#fff" />
-            </TouchableOpacity>
+                    )}
+                </TouchableOpacity>
+            </Animated.View>
+
+            <Animated.View pointerEvents={expanded ? 'auto' : 'none'} style={[styles.animatedButtonContainer, getButtonStyle(300)]}>
+                <TouchableOpacity style={styles.floatingButton} onPress={handleAddPoint}>
+                    <Ionicons name="add-circle-outline" size={28} color="#fff" />
+                </TouchableOpacity>
+            </Animated.View>
+
+            <Animated.View pointerEvents={expanded ? 'auto' : 'none'} style={[styles.animatedButtonContainer, getButtonStyle(380)]}>
+                <TouchableOpacity style={styles.floatingButton} onPress={() => {}}>
+                    <Ionicons name="filter-circle-outline" size={28} color="#fff" />
+                </TouchableOpacity>
+            </Animated.View>
+
         </View>
     )
 }
 
 const styles = StyleSheet.create({
     floatingButton: {
-        position: 'absolute',
+      position: 'absolute',
+      right: 20,
+      backgroundColor: 'green',
+      width: 56,
+      height: 56,
+      borderRadius: 28, 
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 5,  
+      shadowColor: '#000', 
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 3,
+    },
+    floatingButtonMain: {
+      bottom: 140,
+      backgroundColor: '#03dac4',
+    },
+    animatedButtonContainer: {
+      position: 'absolute',
+      right: 0,
+      bottom: 140,
+    },
+    floatingButtonExpand: {
         bottom: 140,
+    },
+    floatingButtonUpdate: {
+        bottom: 140, 
         right: 20,
-        backgroundColor: 'green',
-        width: 56,
-        height: 56,
-        borderRadius: 28, 
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 5,  
-        shadowColor: '#000', 
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-      },
-      floatingButtonReload: {
+     },
+      floatingButtonExpand: {
         bottom: 220,
-      },
-      floatingButtonAdd: {
-        bottom: 300,
-      }, 
-      floatingButtonFilter: {
-        bottom: 380
-      }
-});
+        right: 20,
+    },
+  });
+}

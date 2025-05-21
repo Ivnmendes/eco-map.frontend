@@ -10,43 +10,39 @@ export function DataProvider({ children }) {
   const [collectionTypes, setCollectionTypes] = useState(null);
   const [collectionPoints, setCollectionPoints] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
-  useEffect(() => {
-    async function loadCollectionTypes() {
-      try {
-        const access = await getAccessToken();
+  async function loadInitialData() {
+    if (initialDataLoaded) return;
+    try {
+      const access = await getAccessToken();
 
-        const { data } = await axios.get(
-            `${API_URL}/eco-points/collection-type/`,
-            {  
-                headers: {
-                    Authorization: `Bearer ${access}`
-                },
-            }
-        );
-        setCollectionTypes(data);
+      const { data } = await axios.get(
+        `${API_URL}/eco-points/collection-type/`,
+        {
+          headers: {
+            Authorization: `Bearer ${access}`,
+          },
+        }
+      );
+      setCollectionTypes(data);
 
-        const userData = await axios.get(
-          `${API_URL}/accounts/me/`,
-          {  
-              headers: {
-                  Authorization: `Bearer ${access}`
-              },
-          }
-        );
-        setUserDetails(userData);
-      } catch (error) {
-        console.log(error.response)
-        Alert.alert("Erro", "Erro interno ao carregar categorias");
-      }
+      const userData = await axios.get(`${API_URL}/accounts/me/`, {
+        headers: {
+          Authorization: `Bearer ${access}`,
+        },
+      });
+      setUserDetails(userData);
+      setInitialDataLoaded(true);
+    } catch (error) {
+      console.log(error.request);
+      Alert.alert('Erro', 'Erro interno ao carregar categorias');
     }
-    loadCollectionTypes();
-  }, []);
+  }
 
   async function fetchCollectionPoints(params) {
     try {
         const access = await getAccessToken();
-
         const { data } = await axios.get(
             `${API_URL}/eco-points/collection-point/`,
             { 
@@ -59,7 +55,6 @@ export function DataProvider({ children }) {
         setCollectionPoints(data);
     } catch (error) {
         Alert.alert("Erro", "Erro interno ao carregar pontos de coleta");
-
         console.log(error.response)
     }
   }
@@ -70,7 +65,8 @@ export function DataProvider({ children }) {
         collectionTypes,
         collectionPoints,
         fetchCollectionPoints,
-        userDetails
+        userDetails,
+        loadInitialData
       }}
     >
       {children}

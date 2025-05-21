@@ -24,6 +24,9 @@ export async function clearTokens() {
 export async function verifyOrRefreshTokens() {
     const access = await getAccessToken();
     try {
+        if (!access) {
+            throw new Error('No access token found');
+        }
         await axios.post(`${API_URL}/accounts/token/verify/`, { token: access });
         return true;
     } catch (err) {
