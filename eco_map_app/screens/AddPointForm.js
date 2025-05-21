@@ -4,56 +4,48 @@ import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { DataContext } from '../context/DataContext';
 
-import { getAccessToken } from '../utils/auth';
-import { API_URL } from '../constants';
+import { addPoint } from '../services/ecoPointService';
 
 export default function AddPointForm({ route, navigation }) {
     const { latitude, longitude } = route.params;
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const { collectionTypes, userDetails } = useContext(DataContext);
-    const [selectedValue, setSelectedValue] = useState('');
+    const [selectedValue, setSelectedValue] = useState(collectionTypes.results[0]?.id);
     const [loading, setLoading] = useState(false);
 
     async function handleSubmit() {
         if (!name || !description) {
-            Alert.alert('Erro', 'Preencha todos os campos.');
-            return;
+          Alert.alert('Erro', 'Preencha todos os campos.');
+          return;
         }
-
-        const roundedLatitude = latitude.toFixed(6)
-        const roundedLongitude = longitude.toFixed(6)
-
+      
         setLoading(true);
         try {
-            if (!selectedValue) {
-                Alert.alert('Erro', 'Selecione um tipo válido.');
-                setLoading(false);
-                return;
-            }
-
-            const access = await getAccessToken();
-            await axios.post(`${API_URL}/eco-points/point-request/`, {
-                name,
-                description,
-                latitude: roundedLatitude,
-                longitude: roundedLongitude,
-                types: [Number(selectedValue)],
-                user: userDetails.data.id,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${access}`
-                    }
-                }    
-            );
-            Alert.alert('Sucesso', 'Ponto adicionado.');
-            navigation.replace('Main');
-        } catch (error) {
-            // console.log(error.response)
-            Alert.alert('Erro', 'Falha ao adicionar ponto.');
-        } finally {
+          if (!selectedValue) {
+            Alert.alert('Erro', 'Selecione um tipo válido.');
             setLoading(false);
+            return;
+          }
+      
+          const roundedLatitude = latitude.toFixed(6);
+          const roundedLongitude = longitude.toFixed(6);
+      
+          await addPoint({
+            name,
+            description,
+            latitude: roundedLatitude,
+            longitude: roundedLongitude,
+            types: [Number(selectedValue)],
+          });
+      
+          Alert.alert('Sucesso', 'Ponto adicionado.');
+          navigation.replace('Main');
+        } catch (error) {
+          console.log(error.response);
+          Alert.alert('Erro', 'Falha ao adicionar ponto.');
+        } finally {
+          setLoading(false);
         }
     }
 
@@ -146,6 +138,6 @@ const styles = StyleSheet.create({
     },
     picker: {
         width: '100%', 
-        height: 50
+        height: 55,
     }
 });

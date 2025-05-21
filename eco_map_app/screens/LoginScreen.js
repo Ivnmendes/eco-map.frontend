@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
-import axios from 'axios';
-import { saveTokens } from '../utils/auth';
-import { API_URL } from '../constants';
+
+import { login } from '../services/api';
 
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
@@ -31,14 +30,7 @@ export default function LoginScreen({ navigation }) {
         if (validateFields()) {
             setLoading(true);
             try {
-                const response = await axios.post(`${API_URL}/accounts/login/`, {
-                    email,
-                    password,
-                });
-                await saveTokens({
-                access: response.data.access,
-                refresh: response.data.refresh,
-                });
+                await login(email, password);
                 navigation.replace('Main');
             } catch (error) {
                 Alert.alert('Erro', 'Login falhou. Verifique suas credenciais.');

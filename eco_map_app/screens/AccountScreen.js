@@ -1,35 +1,21 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Button, Text, Alert } from 'react-native';
-import axios from 'axios';
-import { getAccessToken, getRefreshToken, clearTokens } from '../utils/auth';
-import { API_URL } from '../constants';
+
+import { logout } from '../services/api';
 
 export default function HomeScreen({ navigation }) {
     const [loading, setLoading] = useState(false);
 
     async function handleLogout() {
         setLoading(true);
-
         try {
-            const access = await getAccessToken();
-            const refresh = await getRefreshToken();
-
-            await axios.post(
-                `${API_URL}/accounts/logout/`,
-                { refresh },
-                {
-                    headers: {
-                        Authorization: `Bearer ${access}`
-                    },
-                }
-            );
-            await clearTokens();
-            navigation.replace('Login');
+          await logout();
+          navigation.replace('Login');
         } catch (error) {
-            console.log(error.request)
-            Alert.alert('Erro', 'Ocorreu um erro interno');
+          console.log(error.response?.data || error.message);
+          Alert.alert('Erro', 'Ocorreu um erro interno');
         } finally {
-            setLoading(false);
+          setLoading(false);
         }
     }
 

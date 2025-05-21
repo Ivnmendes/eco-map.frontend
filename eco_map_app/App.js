@@ -12,7 +12,7 @@ import { DataProvider } from './context/DataContext';
 
 import MainTabs from './components/MainTabs'
 
-import { verifyOrRefreshTokens } from './utils/auth.js';
+import { verifyOrRefreshTokens } from './services/api.js';
 import AddPointForm from './screens/AddPointForm.js';
 
 const Stack = createNativeStackNavigator();

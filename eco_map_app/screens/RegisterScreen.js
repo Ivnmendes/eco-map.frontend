@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
-import axios from 'axios';
-import { saveTokens } from '../utils/auth';
-import { API_URL } from '../constants';
+
+import { register } from '../services/api';
 
 export default function LoginScreen({ navigation }) {
     const [firstName, setFirstName] = useState('');
@@ -39,21 +38,14 @@ export default function LoginScreen({ navigation }) {
     async function handleRegister() {
         if (validateFields()) {
             setLoading(true);
-
             try {
-                const response = await axios.post(`${API_URL}/accounts/register/`, {
-                    first_name: firstName,
-                    last_name: lastName,
-                    email,
-                    password,
-                    confirm_password: confirmPassword,
+                await register({
+                  first_name: firstName,
+                  last_name: lastName,
+                  email,
+                  password,
+                  confirm_password: confirmPassword,
                 });
-
-                await saveTokens({
-                    access: response.data.access,
-                    refresh: response.data.refresh,
-                });
-
                 navigation.replace('Main');
             } catch (error) {
                 Alert.alert('Erro', 'Registro de conta falhou. Verifique os campos.');
