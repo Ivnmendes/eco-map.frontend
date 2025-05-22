@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { FlatList, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function CollectionTypeCarousel({ collectionTypes, onSelectCollectionType }) {
-    const [selectedCategoryTypes, setSelectedCategoryTypes] = useState([]);
-
+export default function CollectionTypeCarousel({ collectionTypes, selectedCategoryTypes, setSelectedCategoryTypes, }) {
     function handleSelect(id) {
         setSelectedCategoryTypes((prev) =>
             prev.includes(id) ? prev : [...prev, id]
@@ -60,6 +58,11 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
         flexDirection: 'row',
         alignItems: 'center',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
     },
     buttonSelected: {
         backgroundColor: 'green',

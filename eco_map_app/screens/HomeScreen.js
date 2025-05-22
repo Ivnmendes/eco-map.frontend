@@ -20,6 +20,7 @@ export default function HomeScreen({ navigation }) {
     const [hasPermission, setHasPermission] = useState(false);
     const { collectionPoints, fetchCollectionPoints, collectionTypes, loadInitialData } = useContext(DataContext);
     const isFirstLoad = useRef(true);
+    const [selectedCategoryTypes, setSelectedCategoryTypes] = useState([]);
 
     useFocusEffect(
         React.useCallback(() => {
@@ -106,12 +107,15 @@ export default function HomeScreen({ navigation }) {
             <CollectionTypeCarousel
                 collectionTypes={collectionTypes?.results || []}
                 onSelectCollectionType={handleSelectCollectionType}
+                selectedCategoryTypes={selectedCategoryTypes}
+                setSelectedCategoryTypes={setSelectedCategoryTypes}
             />
 
             <MapContainer
                 region={region}
                 mapRef={mapRef}
                 collectionPoints={collectionPoints?.results || []}
+                filters={selectedCategoryTypes}
             />
 
             <FloatingButtons

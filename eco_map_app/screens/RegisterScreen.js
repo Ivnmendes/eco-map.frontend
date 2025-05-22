@@ -48,6 +48,7 @@ export default function LoginScreen({ navigation }) {
                 });
                 navigation.replace('Main');
             } catch (error) {
+                console.log(error.request)
                 Alert.alert('Erro', 'Registro de conta falhou. Verifique os campos.');
             } finally {
                 setLoading(false);
