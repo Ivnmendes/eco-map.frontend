@@ -52,19 +52,7 @@ export default function HomeScreen({ navigation }) {
 
     async function handleAddPoint() {
         try {
-            setLoadingLocation(true);
-            if (!hasPermission) {
-                Alert.alert('Permissão não concedida');
-                setLoadingLocation(false);
-                return;
-            }
-            const loc = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.Low
-            });
-            navigation.navigate('AddPointForm', {
-                latitude: loc.coords.latitude,
-                longitude: loc.coords.longitude
-            });
+            navigation.navigate('AddPointForm', {});
         } catch {
             Alert.alert('Erro', 'Não foi possível obter a localização');
         } finally {
