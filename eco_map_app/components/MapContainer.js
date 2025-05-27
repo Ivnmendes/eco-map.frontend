@@ -54,7 +54,7 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
             {collectionPoints.map(point => {
             const shouldDisplayMarker =
                 filters.length === 0 || 
-                point.types.every(type => filters.includes(type));
+                point.types.some(type => filters.includes(type));
     
             if (!shouldDisplayMarker) return null;
     
