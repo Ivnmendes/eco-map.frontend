@@ -1,5 +1,5 @@
-import React, { useContext, useState } from 'react';
-import { View, Alert, StyleSheet, FlatList, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, StyleSheet, FlatList, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import FormHeader from '../components/FormHeader';
 import FormFooter from '../components/FormFooter';
 
