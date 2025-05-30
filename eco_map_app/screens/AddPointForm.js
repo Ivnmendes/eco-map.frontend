@@ -54,12 +54,6 @@ export default function AddPointForm({ route, navigation }) {
     async function handleSubmit() {
         setLoading(true);
         try {
-            if (!selectedTypes || selectedTypes.length === 0) {
-                Alert.alert('Erro', 'Selecione ao menos um tipo de coleta.');
-                setLoading(false);
-                return;
-            }
-
             let point;
 
             if (withoutAddress) {
@@ -68,20 +62,17 @@ export default function AddPointForm({ route, navigation }) {
                 point = {
                     name,
                     description,
+                    types: selectedTypes.map(Number),
+                    operatingHours,
                     latitude: roundedLatitude,
                     longitude: roundedLongitude,
-                    types: selectedTypes.map(Number),
                 };
             } else {
-                if (!street || !number || !postcode || !neighborhood) {
-                    Alert.alert('Erro', 'Preencha todos os campos de endereço.');
-                    setLoading(false);
-                    return;
-                }
                 point = {
                     name,
                     description,
                     types: selectedTypes.map(Number),
+                    operatingHours,
                     street,
                     number,
                     postcode,
@@ -103,22 +94,22 @@ export default function AddPointForm({ route, navigation }) {
 
     function nextStep() {
         if (step === 1) {
-        if (!name || !description || selectedTypes.length === 0) {
-            alert('Preencha nome, descrição e selecione ao menos um tipo.');
-            return;
-        }
-        setStep(2);
-        } else if (step === 2) {
+            if (!name || !description || selectedTypes.length === 0) {
+                alert('Preencha nome, descrição e selecione ao menos um tipo.');
+                return;
+            }
             if (withoutAddress) {
-            setStep(3);
-        } else {
+                return setStep(3);
+            }
+        }
+        if (step === 2) {
             if (!street || !number || !postcode || !neighborhood) {
                 alert('Preencha todos os campos do endereço.');
                 return;
             }
         }
-        setStep(3);
-        }
+
+        setStep(step + 1);
     }
 
     function prevStep() {

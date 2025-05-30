@@ -28,7 +28,7 @@ api.interceptors.request.use(async config => {
 	if (!isPublic) {
 		const token = await getAccessToken();
 		if (token) {
-		config.headers.Authorization = `Bearer ${token}`;
+			config.headers.Authorization = `Bearer ${token}`;
 		}
 	}
 
@@ -41,19 +41,19 @@ api.interceptors.response.use(
 		const originalRequest = error.config;
 
 		if (
-		error.response?.data?.detail === 'Token is blacklisted' &&
+		(error.response?.data?.detail === 'Token is blacklisted' || error.response?.status === 401) &&
 		!originalRequest._retry
 		) {
-		originalRequest._retry = true;
-		try {
-			const newAccessToken = await refreshAccessToken();
-			originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-			return api(originalRequest);
-		} catch (err) {
-			await clearTokens();
-			navigate('login');
-			return Promise.reject(err);
-		}
+			originalRequest._retry = true;
+			try {
+				const newAccessToken = await refreshAccessToken();
+				originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+				return api(originalRequest);
+			} catch (err) {
+				await clearTokens();
+				navigate('login');
+				return Promise.reject(err);
+			}
 		}
 		return Promise.reject(error);
 	}
