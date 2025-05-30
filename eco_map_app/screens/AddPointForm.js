@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, FlatList, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
-import FormHeader from '../components/FormHeader';
-import FormFooter from '../components/FormFooter';
+import { Alert, StyleSheet, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Text } from 'react-native';
+
+import FormBasicInfo from '../components/FormBasicInfo';
+import FormAddress from '../components/FormAddress';
+import FormOperatingHours from '../components/FormOperatingHours';
 
 import { addPoint } from '../services/ecoPointService';
+
+const DAYS_OF_WEEK_CONFIG = [
+    { id: 1, key: 'segunda', label: 'Segunda-feira' },
+    { id: 2, key: 'terca', label: 'Terça-feira' },
+    { id: 3, key: 'quarta', label: 'Quarta-feira' },
+    { id: 4, key: 'quinta', label: 'Quinta-feira' },
+    { id: 5, key: 'sexta', label: 'Sexta-feira' },
+    { id: 6, key: 'sabado', label: 'Sábado' },
+    { id: 7, key: 'domingo', label: 'Domingo' },
+];
 
 export default function AddPointForm({ route, navigation }) {
     const { latitude, longitude } = route.params || {};
@@ -16,15 +28,30 @@ export default function AddPointForm({ route, navigation }) {
     const [selectedTypes, setSelectedTypes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [operatingHours, setOperatingHours] = useState(() => {
+        const initialState = {};
+        DAYS_OF_WEEK_CONFIG.forEach(day => {
+            initialState[day.id] = {
+                name: day.label,
+                selected: false,
+                open: '',
+                close: ''
+            };
+        });
+        initialState[8] = {
+            name: 'Dia útil',
+            selected: false,
+            open: '',
+            close: ''
+        };
+
+        return initialState;
+    });
+    const [step, setStep] = useState(1);
 
     const withoutAddress = latitude && longitude;
 
     async function handleSubmit() {
-        if (!name || !description) {
-            Alert.alert('Erro', 'Preencha os campos de nome e descrição.');
-            return;
-        }
-
         setLoading(true);
         try {
             if (!selectedTypes || selectedTypes.length === 0) {
@@ -74,7 +101,30 @@ export default function AddPointForm({ route, navigation }) {
         }
     }
 
-    const dummyData = [{ key: 'formContent' }];
+    function nextStep() {
+        if (step === 1) {
+        if (!name || !description || selectedTypes.length === 0) {
+            alert('Preencha nome, descrição e selecione ao menos um tipo.');
+            return;
+        }
+        setStep(2);
+        } else if (step === 2) {
+            if (withoutAddress) {
+            setStep(3);
+        } else {
+            if (!street || !number || !postcode || !neighborhood) {
+                alert('Preencha todos os campos do endereço.');
+                return;
+            }
+        }
+        setStep(3);
+        }
+    }
+
+    function prevStep() {
+        if (step === 3 && withoutAddress) setStep(1);
+        else if (step > 1) setStep(step - 1);
+    }
 
     return (
         <KeyboardAvoidingView
@@ -82,36 +132,49 @@ export default function AddPointForm({ route, navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
         >
-                <FlatList
-                    data={dummyData}
-                    keyExtractor={(item) => item.key}
-                    renderItem={() => null}
-                    ListHeaderComponent={
-                        <FormHeader
-                            name={name} setName={setName}
-                            description={description} setDescription={setDescription}
-                            selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes}
-                            withoutAddress={withoutAddress}
-                            street={street} setStreet={setStreet}
-                            number={number} setNumber={setNumber}
-                            postcode={postcode} setPostcode={setPostcode}
-                            neighborhood={neighborhood} setNeighborhood={setNeighborhood}
-                            isDropdownOpen={isDropdownOpen}
-                            setIsDropdownOpen={setIsDropdownOpen}
-
-                        />
-                    }
-                    ListFooterComponent={
-                        <FormFooter
-                            handleSubmit={handleSubmit}
-                            loading={loading}
-                            isDropdownOpen={isDropdownOpen}
-                        />
-                    }
-                    contentContainerStyle={styles.flatListContent}
-                    keyboardShouldPersistTaps="handled"
-                    onScrollBeginDrag={Keyboard.dismiss}
+            {step === 1 && (
+                <FormBasicInfo
+                name={name} setName={setName}
+                description={description} setDescription={setDescription}
+                selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes}
+                isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen}
                 />
+            )}
+            {step === 2 && (
+                <FormAddress
+                street={street} setStreet={setStreet}
+                number={number} setNumber={setNumber}
+                postcode={postcode} setPostcode={setPostcode}
+                neighborhood={neighborhood} setNeighborhood={setNeighborhood}
+                />
+            )}
+            {step === 3 && (
+                <FormOperatingHours
+                operatingHours={operatingHours} setOperatingHours={setOperatingHours}
+                DAYS_OF_WEEK_CONFIG={DAYS_OF_WEEK_CONFIG}
+                />
+            )}
+
+            <View style={styles.buttonsView}>
+                {step !== 1 ? (
+                    <TouchableOpacity style={[styles.backButton, styles.button]} onPress={prevStep}>
+                        <Text style={styles.textButton}>Voltar</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <View></View>
+                )}
+                
+                {step !== 3 ? (
+                    <TouchableOpacity style={[styles.goButton, styles.button]} onPress={nextStep}>
+                        <Text style={styles.textButton}>Avançar</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity style={[styles.goButton, styles.button]} onPress={handleSubmit}>
+                        <Text style={styles.textButton}>Enviar</Text>
+                    </TouchableOpacity>
+                )}
+
+            </View>
         </KeyboardAvoidingView>
     );
 }
@@ -120,9 +183,27 @@ const styles = StyleSheet.create({
     containerAvoidingView: {
         flex: 1,
     },
-    flatListContent: {
-        flexGrow: 1,
-        paddingVertical: '20%',
-        paddingHorizontal: 40,
+    buttonsView: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+    },
+    goButton: {
+        alignSelf: 'flex-end',
+    },
+    backButton: {
+        alignSelf: 'flex-start',
+    },
+    button: {
+        width: 130,
+        borderRadius: 50,
+        padding: 10,
+        backgroundColor: 'green',
+    },
+    textButton: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 });
