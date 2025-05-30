@@ -104,6 +104,7 @@ export default function HomeScreen({ navigation }) {
                 mapRef={mapRef}
                 collectionPoints={collectionPoints?.results || []}
                 filters={selectedCategoryTypes}
+                collectionTypes={collectionTypes}
             />
 
             <FloatingButtons

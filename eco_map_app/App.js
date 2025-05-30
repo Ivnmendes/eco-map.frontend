@@ -5,6 +5,7 @@ import { navigationRef } from './services/navigationService';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
@@ -40,25 +41,27 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <DataProvider>  
-        <NavigationContainer ref={navigationRef}>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {isAuthenticated ? (
-              <>
-                <Stack.Screen name="Main" component={MainTabs} />
-                <Stack.Screen name="Login" component={LoginScreen} />
-                <Stack.Screen name="Register" component={RegisterScreen} />
-                <Stack.Screen name="AddPointForm" component={AddPointForm} />
-              </>
-            ) : (
-              <>
-                <Stack.Screen name="Login" component={LoginScreen} />
-                <Stack.Screen name="Register" component={RegisterScreen} />
-                <Stack.Screen name="Main" component={MainTabs} />
-                <Stack.Screen name="AddPointForm" component={AddPointForm} />
-              </>
-            )}
-          </Stack.Navigator>
-        </NavigationContainer>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <NavigationContainer ref={navigationRef}>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              {isAuthenticated ? (
+                <>
+                  <Stack.Screen name="Main" component={MainTabs} />
+                  <Stack.Screen name="Login" component={LoginScreen} />
+                  <Stack.Screen name="Register" component={RegisterScreen} />
+                  <Stack.Screen name="AddPointForm" component={AddPointForm} />
+                </>
+              ) : (
+                <>
+                  <Stack.Screen name="Login" component={LoginScreen} />
+                  <Stack.Screen name="Register" component={RegisterScreen} />
+                  <Stack.Screen name="Main" component={MainTabs} />
+                  <Stack.Screen name="AddPointForm" component={AddPointForm} />
+                </>
+              )}
+            </Stack.Navigator>
+          </NavigationContainer>
+        </GestureHandlerRootView>
       </DataProvider>
     </SafeAreaProvider>
   );
