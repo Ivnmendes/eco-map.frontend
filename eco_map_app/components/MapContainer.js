@@ -16,7 +16,6 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
     
     const handleMarkerPress = (marker) => {
         setSelectedMarker(marker);
-        // bottomSheetRef.current?.snapToIndex(0);
         bottomSheetRef.current?.present();
     };
 
@@ -55,11 +54,13 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
         if (filters.length === 0) {
             return collectionPoints;
         }
+
+        console.log('aqui1 collectionPoints', collectionPoints);
+        console.log('aqui2 filters', filters);
+        console.log('aqui3 collectionTypes', collectionTypes);
+
         return collectionPoints.filter(point =>
-            point.types.some(typeId => {
-                const typeObject = collectionTypes.find(ct => ct.id === typeId);
-                return typeObject && filters.includes(typeObject.name);
-            })
+            point.types.some(typeId => { return filters.includes(typeId) })
         );
     }, [collectionPoints, filters, collectionTypes]);
 
