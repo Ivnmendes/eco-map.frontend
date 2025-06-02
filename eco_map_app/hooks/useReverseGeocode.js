@@ -1,7 +1,5 @@
-// src/hooks/useReverseGeocode.js
-
 import { useState, useEffect } from 'react';
-import { getCache, setCache } from '../services/geocodeService';
+import { getCache, setCache } from '../services/cacheService';
 import { reverseGeocodeApi } from '../services/ecoPointService';
 
 export const useReverseGeocode = (latitude, longitude) => {

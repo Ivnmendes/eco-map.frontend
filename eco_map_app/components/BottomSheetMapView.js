@@ -26,7 +26,7 @@ function formatAddress(addressObject) {
     return addressParts.join(', \n');
 };
 
-export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, bottomSheetRef }) {
+export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, bottomSheetRef}) {
     const snapPoints = useMemo(() => ['50%', '88%'], []);
     const { collectionTypes } = useContext(DataContext);
     const { bottom: safeAreaBottom } = useSafeAreaInsets();
@@ -52,6 +52,35 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
             </Text>
         ));
     }, [selectedMarker, collectionTypes]);
+
+    const displayOperatingHours = useMemo(() => {
+        const days = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+
+        if (!selectedMarker || !selectedMarker.operating_hours) {
+            return <Text style={styles.typesLabel}>Horário não disponível</Text>;
+        }
+        const operatingHours = selectedMarker.operating_hours;
+        if (Array.isArray(operatingHours) && operatingHours.length > 0) {
+            return operatingHours.map((day, index) => (
+                <>
+                <View style={styles.dayContainer} >
+                    <Text style={styles.dayText}>
+                        {days[day.day_of_week - 1]}:
+                    </Text>
+                    <Text style={styles.hourText}>
+                        {day.opening_time.slice(0, 5)}
+                    </Text>
+                    <Text style={styles.hourSeparator}> - </Text>
+                    <Text style={styles.hourText}>
+                        {day.closing_time.slice(0, 5)}
+                    </Text>
+                </View>
+                </>
+            ));
+        } else {
+            return <Text style={styles.typesLabel}>Horário não disponível</Text>;
+        }
+    }, [selectedMarker]);  
 
     function handleSheetChanges(index) {
         if (index === -1) {
@@ -97,6 +126,7 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
                 <View style={styles.separator}/>
                 <View style={styles.opratingHoursContainer}>
                     <Text style={styles.typesLabel}>Horário de Funcionamento:</Text>
+                    {displayOperatingHours}
                 </View>
             </BottomSheetScrollView>
         </BottomSheetModal>
@@ -175,5 +205,37 @@ const styles = StyleSheet.create({
         height: 1,
         backgroundColor: '#333',
         marginBottom: 13,
+    },
+    opratingHoursContainer: {
+        marginBottom: 20,
+    },
+    dayContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 25,
+        paddingLeft: 5,
+    },
+    dayText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+        width: 80,
+        marginRight: 5,
+    },
+    hourText: {
+        fontSize: 16,
+        color: '#555',
+        backgroundColor: '#c0c0c0',
+        borderRadius: 5,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+    },
+    hourSeparator: {
+        fontSize: 16,
+        color: '#555',
+        marginHorizontal: 5,
+    },
+    opratingHoursContainer: {
+        marginBottom: 20,
     },
 });
