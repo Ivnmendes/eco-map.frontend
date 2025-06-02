@@ -16,53 +16,56 @@ import MainTabs from './components/MainTabs'
 
 import { verifyOrRefreshTokens } from './services/api.js';
 import AddPointForm from './screens/AddPointForm.js';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-  useEffect(() => {
-    const init = async () => {
-      const valid = await verifyOrRefreshTokens();
-      setIsAuthenticated(valid);
-    };
-    init();
-  }, []);
+    useEffect(() => {
+        const init = async () => {
+        const valid = await verifyOrRefreshTokens();
+        setIsAuthenticated(valid);
+        };
+        init();
+    }, []);
 
-  if (isAuthenticated === null) {
+    if (isAuthenticated === null) {
+        return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" />
+        </View>
+        );
+    }
+
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  return (
-    <SafeAreaProvider>
-      <DataProvider>  
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <NavigationContainer ref={navigationRef}>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-              {isAuthenticated ? (
-                <>
-                  <Stack.Screen name="Main" component={MainTabs} />
-                  <Stack.Screen name="Login" component={LoginScreen} />
-                  <Stack.Screen name="Register" component={RegisterScreen} />
-                  <Stack.Screen name="AddPointForm" component={AddPointForm} />
-                </>
-              ) : (
-                <>
-                  <Stack.Screen name="Login" component={LoginScreen} />
-                  <Stack.Screen name="Register" component={RegisterScreen} />
-                  <Stack.Screen name="Main" component={MainTabs} />
-                  <Stack.Screen name="AddPointForm" component={AddPointForm} />
-                </>
-              )}
-            </Stack.Navigator>
-          </NavigationContainer>
+            <SafeAreaProvider>
+                <DataProvider>  
+                    <BottomSheetModalProvider>
+                        <NavigationContainer ref={navigationRef}>
+                            <Stack.Navigator screenOptions={{ headerShown: false }}>
+                            {isAuthenticated ? (
+                                <>
+                                <Stack.Screen name="Main" component={MainTabs} />
+                                <Stack.Screen name="Login" component={LoginScreen} />
+                                <Stack.Screen name="Register" component={RegisterScreen} />
+                                <Stack.Screen name="AddPointForm" component={AddPointForm} />
+                                </>
+                            ) : (
+                                <>
+                                <Stack.Screen name="Login" component={LoginScreen} />
+                                <Stack.Screen name="Register" component={RegisterScreen} />
+                                <Stack.Screen name="Main" component={MainTabs} />
+                                <Stack.Screen name="AddPointForm" component={AddPointForm} />
+                                </>
+                            )}
+                            </Stack.Navigator>
+                        </NavigationContainer>
+                    </BottomSheetModalProvider>
+                </DataProvider>
+            </SafeAreaProvider>
         </GestureHandlerRootView>
-      </DataProvider>
-    </SafeAreaProvider>
   );
 }

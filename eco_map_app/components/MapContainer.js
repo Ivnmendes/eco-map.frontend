@@ -16,7 +16,8 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
     
     const handleMarkerPress = (marker) => {
         setSelectedMarker(marker);
-        bottomSheetRef.current?.snapToIndex(0);
+        // bottomSheetRef.current?.snapToIndex(0);
+        bottomSheetRef.current?.present();
     };
 
     async function handleMapPress(event) {
@@ -104,7 +105,6 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
             <BottomSheetMapView
                 selectedMarker={selectedMarker}
                 setSelectedMarker={setSelectedMarker}
-                collectionPoints={collectionPoints}
                 navigate={navigate}
                 bottomSheetRef={bottomSheetRef}
             />

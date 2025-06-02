@@ -1,40 +1,44 @@
 import api from './api';
 
 function extractOperatingHours(operatingHours) {
-	let operating_hours = [];
+	const dayMap = new Map();
+
+	for (let dayKey = 1; dayKey <= 7; dayKey++) {
+        const key = String(dayKey);
+        const value = operatingHours[key];
+
+        if (value?.selected) {
+            const [hOpen = '00', mOpen = '00'] = (value.open || '00:00').split(':');
+            const [hClose = '23', mClose = '59'] = (value.close || '23:59').split(':');
+
+            dayMap.set(dayKey, {
+                day_of_week: dayKey,
+                opening_time: `${hOpen.padStart(2, '0')}:${mOpen.padStart(2, '0')}:00`,
+                closing_time: `${hClose.padStart(2, '0')}:${mClose.padStart(2, '0')}:00`
+            });
+        }
+    }
 
 	if (operatingHours[8]?.selected) {
-		const [hOpen = '00', mOpen = '00'] = (operatingHours[8].open || '00:00').split(':');
-		const [hClose = '23', mClose = '59'] = (operatingHours[8].close || '23:59').split(':');
+        const [hOpen = '00', mOpen = '00'] = (operatingHours[8].open || '00:00').split(':');
+        const [hClose = '23', mClose = '59'] = (operatingHours[8].close || '23:59').split(':');
 
-		const fixedOpen = `${hOpen.padStart(2, '0')}:${mOpen.padStart(2, '0')}:00`;
-		const fixedClose = `${hClose.padStart(2, '0')}:${mClose.padStart(2, '0')}:00`;
+        const generalTime = {
+            opening_time: `${hOpen.padStart(2, '0')}:${mOpen.padStart(2, '0')}:00`,
+            closing_time: `${hClose.padStart(2, '0')}:${mClose.padStart(2, '0')}:00`
+        };
+        
+        for (let dayKey = 1; dayKey <= 7; dayKey++) {
+            if (!dayMap.has(dayKey)) {
+                dayMap.set(dayKey, {
+                    day_of_week: dayKey,
+                    ...generalTime
+                });
+            }
+        }
+    }
 
-		// 1=segunda-feira, 2=terça-feira, ..., 7=domingo
-		// 8=dia úteis
-		 for (let day = 1; day <= 7; day++) {
-			operating_hours.push({
-			day_of_week: day,
-			opening_time: fixedOpen,
-			closing_time: fixedClose
-			});
-		}
-	}
-
-	for (const [key, value] of Object.entries(operatingHours)) {
-		if (key === '8' || !value.selected) continue;
-
-		const [hOpen = '00', mOpen = '00'] = (value.open || '00:00').split(':');
-		const [hClose = '23', mClose = '59'] = (value.close || '23:59').split(':');
-
-		operating_hours.push({
-			day_of_week: value.name.toLowerCase(),
-			opening_time: `${hOpen.padStart(2, '0')}:${mOpen.padStart(2, '0')}:00`,
-			closing_time: `${hClose.padStart(2, '0')}:${mClose.padStart(2, '0')}:00`
-		});	
-	}
-
-	return operating_hours;
+	return Array.from(dayMap.values());
 }
 
 export async function addPoint(point) {
@@ -75,7 +79,12 @@ export async function addPoint(point) {
 		operating_hours
 	};
 
-	console.log('Payload to add point:', payload);
-
 	return await api.post('/eco-points/collection-point/', payload);
 }
+
+export async function reverseGeocodeApi(latitude, longitude) {
+	const response = await api.get(`/geo-code/reverse-geocode/`, { 
+		params: { lat: latitude, lon: longitude }
+	});
+	return response.data;
+};

@@ -1,78 +1,109 @@
 import React, { useContext, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { Image, View, StyleSheet, Text, ActivityIndicator } from 'react-native'; 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 
 import { DataContext } from '../context/DataContext';
+import { useReverseGeocode } from '../hooks/useReverseGeocode';
 
-export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, collectionPoints, bottomSheetRef, navigate }) {
-    const snapPoints = useMemo(() => ['25%', '50%'], []);
+function formatAddress(addressObject) {
+    if (!addressObject) return 'Endereço não disponível';
+
+    const { street, number, neighborhood, city, state, postcode } = addressObject;
+    let addressParts = [];
+    if (street) addressParts.push(`${street}${number ? ' ' + number : ' S/nº'}`);
+    if (neighborhood) addressParts.push(neighborhood);
+    
+    let cityStateZip = [];
+    if (city) cityStateZip.push(city);
+    if (state) cityStateZip.push(state);
+    if (postcode) cityStateZip.push("\n" + postcode);
+
+    if (cityStateZip.length > 0) {
+        addressParts.push(cityStateZip.join(city && state ? ' - ' : ', '));
+    }
+    
+    return addressParts.join(', \n');
+};
+
+export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, bottomSheetRef }) {
+    const snapPoints = useMemo(() => ['50%', '88%'], []);
     const { collectionTypes } = useContext(DataContext);
-    const handleSheetChanges = (index) => {
+    const { bottom: safeAreaBottom } = useSafeAreaInsets();
+
+    const { address, isLoading: isAddressLoading } = useReverseGeocode(
+        selectedMarker?.latitude,
+        selectedMarker?.longitude
+    );
+
+    const displayedTypes = useMemo(() => {
+        if (!selectedMarker || !Array.isArray(selectedMarker.types) || !Array.isArray(collectionTypes?.results)) {
+            return <Text style={styles.typesLabel}>Carregando tipos...</Text>;
+        }
+        if (selectedMarker.types.length === 0) {
+            return <Text style={styles.typesLabel}>Não especificado</Text>;
+        }
+        const foundTypes = selectedMarker.types
+            .map(typeId => collectionTypes.results.find(t => t.id === typeId))
+            .filter(Boolean);
+        return foundTypes.map(type => (
+            <Text key={type.id} style={styles.markerTypeChip}>
+                {type.name}
+            </Text>
+        ));
+    }, [selectedMarker, collectionTypes]);
+
+    function handleSheetChanges(index) {
         if (index === -1) {
             setSelectedMarker(null);
         }
     };
-
-    const displayedTypes = useMemo(() => {
-        if (!selectedMarker || !Array.isArray(selectedMarker.types) || !Array.isArray(collectionTypes)) {
-            return 'Carregando tipos...';
-        }
-        if (selectedMarker.types.length === 0) {
-            return 'Não especificado';
-        }
-        return selectedMarker.types
-            .map(typeId => {
-                const type = collectionTypes.find(t => t.id === typeId);
-                return type ? type.name : null;
-            })
-            .filter(Boolean) 
-            .join(', ');
-    }, [selectedMarker, collectionTypes]);
 
     if (!selectedMarker) {
         return null;
     }
 
     return (
-        <BottomSheet
+        <BottomSheetModal
             ref={bottomSheetRef}
-            index={-1} 
+            index={0} 
             snapPoints={snapPoints}
             onChange={handleSheetChanges}
             enablePanDownToClose={true}
-            style={styles.bottomSheetContainer}
             handleIndicatorStyle={styles.handleIndicator} 
             backgroundStyle={styles.bottomSheetBackground}
+            bottomInset={safeAreaBottom}
         >
-            <BottomSheetView style={styles.bottomSheetContentContainer}>
+            <BottomSheetScrollView contentContainerStyle={styles.scrollViewContentContainer}>
                 <Text style={styles.markerTitle}>{selectedMarker.name || 'Ponto de Coleta'}</Text>
-                <Text style={styles.markerAddress}>{selectedMarker.address || 'Endereço não disponível'}</Text>
-                <TouchableOpacity 
-                    style={styles.detailsButton}
-                    onPress={() => {
-                        navigate('PointDetails', { pointId: selectedMarker.id });
-                        bottomSheetRef.current?.close();
-                    }}
-                >
-                    <Text style={styles.detailsButtonText}>Ver Detalhes</Text>
-                </TouchableOpacity>
-            </BottomSheetView>
-        </BottomSheet>
-    )
+                <View style={styles.addressContainer}>
+                    {isAddressLoading ? (
+                        <ActivityIndicator size="small" color="#555" />
+                    ) : (
+                        <Text style={styles.markerAddress}>
+                            {formatAddress(address)}
+                        </Text>
+                    )}
+                </View>
+                <View style={styles.separator}/>
+                <View style={styles.typesContainer}>
+                    <Text style={styles.typesLabel}>Tipos:</Text>
+                    <View style={styles.markerTypesView}>
+                        {displayedTypes}
+                    </View>
+                </View>
+                <View style={styles.separator}/>
+                <Image source={ require('../assets/coletaseletiva-cke.webp') } style={styles.pointImage} resizeMode='cover'/>
+                <View style={styles.separator}/>
+                <View style={styles.opratingHoursContainer}>
+                    <Text style={styles.typesLabel}>Horário de Funcionamento:</Text>
+                </View>
+            </BottomSheetScrollView>
+        </BottomSheetModal>
+    );
 }
 
 const styles = StyleSheet.create({
-    bottomSheetContainer: { 
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: -3, 
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        
-        elevation: 20,
-    },
     bottomSheetBackground: { 
         borderColor: '#888',
         borderWidth: 1,
@@ -81,39 +112,68 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 20,
     },
     handleIndicator: {
-        backgroundColor: '#E0E0E0',
+        backgroundColor: 'green',
         width: 40,
         height: 4,
         borderRadius: 2,
+        alignSelf: 'center', 
+        marginVertical: 8,   
     },
-    bottomSheetContentContainer: {
-        flex: 1,
-        padding: 20,
+    scrollViewContentContainer: {
+        paddingHorizontal: 20, 
+        paddingTop: 10,
+        paddingBottom: 40,
     },
     markerTitle: {
-        fontSize: 18,
+        fontSize: 20, 
         fontWeight: 'bold',
         marginBottom: 8,
+        color: '#333',
+    },
+    addressContainer: {
+        minHeight: 20, 
     },
     markerAddress: {
-        fontSize: 14,
-        color: 'gray',
+        fontSize: 15,
+        color: '#555',
+        lineHeight: 22,
         marginBottom: 8,
     },
-    markerTypes: {
+    typesContainer: {
+        marginBottom: 5,
+    },
+    typesLabel: {
+        fontSize: 16, 
+        fontWeight: '500',
+        marginBottom: 8,
+        color: '#333',
+    },
+    markerTypesView: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+    },
+    markerTypeChip: {
         fontSize: 14,
-        marginBottom: 16,
-    },
-    detailsButton: {
+        marginBottom: 8, 
+        marginRight: 8,
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 16,
         backgroundColor: 'green',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    detailsButtonText: {
         color: 'white',
-        fontSize: 16,
         fontWeight: 'bold',
-    }
+        overflow: 'hidden',
+    },
+    pointImage: {
+        width: '100%',
+        height: 200,
+        borderRadius: 10,
+        marginBottom: 16,
+        backgroundColor: '#e0e0e0',
+    },
+    separator: {
+        height: 1,
+        backgroundColor: '#333',
+        marginBottom: 13,
+    },
 });
