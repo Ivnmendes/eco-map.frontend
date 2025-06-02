@@ -17,6 +17,26 @@ const DAYS_OF_WEEK_CONFIG = [
     { id: 7, key: 'domingo', label: 'Domingo' },
 ];
 
+const ActualStep = ({ step }) => {
+  const nSteps = 3;
+  return (
+    <View style={styles.stepperContainer}>
+      {Array.from({ length: nSteps }).map((_, index) => {
+        const actualStep = index + 1;
+
+        const circleStyle = [
+          styles.defaultCircle,
+          actualStep <= step ? styles.filledCircle : styles.notFilledCircle,
+        ];
+
+        return (
+          <View key={actualStep} style={circleStyle} />
+        );
+      })}
+    </View>
+  );
+};
+
 export default function AddPointForm({ route, navigation }) {
     const { latitude, longitude } = route.params || {};
     const [name, setName] = useState('');
@@ -123,6 +143,7 @@ export default function AddPointForm({ route, navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
         >
+            <ActualStep step={step} />
             {step === 1 && (
                 <FormBasicInfo
                 name={name} setName={setName}
@@ -178,6 +199,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
+        paddingBottom: 15,
     },
     goButton: {
         alignSelf: 'flex-end',
@@ -196,5 +218,27 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    stepperContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginVertical: 50,
+        padding: 10,
+    },
+    defaultCircle: {
+        width: 12, 
+        height: 12,
+        borderRadius: 6, 
+        borderWidth: 1,
+        borderColor: '#aaa',
+        marginHorizontal: 5,
+    },
+    filledCircle: {
+        backgroundColor: 'green',
+        borderColor: '#aaa',
+    },
+    notFilledCircle: {
+        backgroundColor: 'transparent',
+        borderColor: '#aaa',
     },
 });
