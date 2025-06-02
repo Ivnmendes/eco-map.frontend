@@ -11,6 +11,9 @@ export default function FormBasicInfo({
 
     return (
         <View style={styles.formContent}>
+            <View style={styles.textContainer}>
+                <Text style={styles.text}>Insira os dados básicos do ponto:</Text>
+            </View>
             <View style={styles.fieldContainer}>
                 <View style={styles.labelContainer}>
                     <Text style={styles.label}>Nome</Text>
@@ -33,7 +36,7 @@ export default function FormBasicInfo({
                     style={styles.input}
                 />
             </View>
-            <View style={styles.fieldContainer}>
+            <View style={[styles.fieldContainer, isDropdownOpen && styles.dropdownContainerOpen]}>
                 <MultiSelectDropdown 
                     value={selectedTypes} 
                     setValue={setSelectedTypes}
@@ -48,8 +51,15 @@ export default function FormBasicInfo({
 const styles = StyleSheet.create({
     formContent: {
         flex: 1,
-        justifyContent: 'center', 
-        padding: '10%',
+        justifyContent: 'flex-start', 
+        paddingHorizontal: '10%',
+    },
+    textContainer: {
+        marginBottom: 20,
+    },
+    text: {
+        fontSize: 18,
+        fontWeight: 'bold',
     },
     fieldContainer: {
         marginBottom: 20,
@@ -67,5 +77,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 5,
         paddingHorizontal: 10,
+    },
+    dropdownContainerOpen: {
+        zIndex: 1000,
     },
 });

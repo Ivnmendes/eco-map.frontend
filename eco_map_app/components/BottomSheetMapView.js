@@ -63,7 +63,7 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
         if (Array.isArray(operatingHours) && operatingHours.length > 0) {
             return operatingHours.map((day, index) => (
                 <>
-                <View style={styles.dayContainer} >
+                <View key={day.day_of_week} style={styles.dayContainer} >
                     <Text style={styles.dayText}>
                         {days[day.day_of_week - 1]}:
                     </Text>

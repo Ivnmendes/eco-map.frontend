@@ -88,7 +88,7 @@ export default function FormOperatingHours({ operatingHours, setOperatingHours, 
                     const dayData = operatingHours[day.id] || { selected: false, open: '', close: '' };
                     
                     return (
-                        <View style={styles.dayEntrySectionColumnItemContainer}>
+                        <View key={day.id} style={styles.dayEntrySectionColumnItemContainer}>
                             <TouchableOpacity 
                                 style={styles.dayEntrySectionColumnItem}
                                 onPress={() => handleCheckBoxChange(day.id)}
@@ -186,10 +186,7 @@ export default function FormOperatingHours({ operatingHours, setOperatingHours, 
 const styles = StyleSheet.create({
     formContent: {
         flex: 1,
-        alignItems: 'flex-start',
-        justifyContent: 'center', 
-        padding: 1,
-        marginTop: 90,
+        justifyContent: 'flex-start', 
         paddingHorizontal: 20,
     },
     twoColumnContainer: {

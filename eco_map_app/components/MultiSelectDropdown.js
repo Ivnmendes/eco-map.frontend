@@ -6,7 +6,6 @@ import DropDownPicker from 'react-native-dropdown-picker';
 export default function MultiSelectDropdown({ value, setValue, open, setOpen }) { 
     const { collectionTypes } = useContext(DataContext);
     const [items, setItems] = useState([]);
-
     useEffect(() => {
         if (collectionTypes && collectionTypes.results) {
             setItems(collectionTypes.results.map(type => ({
@@ -54,7 +53,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         width: '100%',
         marginBottom: 12,
-        zIndex: 10
+        zIndex: 5000
     },
     label: {
         fontSize: 18,

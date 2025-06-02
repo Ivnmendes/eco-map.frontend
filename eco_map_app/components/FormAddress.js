@@ -70,8 +70,8 @@ export default function FormAddress({
 const styles = StyleSheet.create({
     formContent: {
         flex: 1,
-        justifyContent: 'center',
-        padding: '10%',
+        justifyContent: 'flex-start', 
+        paddingHorizontal: '10%',
     },
     textContainer: {
         marginBottom: 20,

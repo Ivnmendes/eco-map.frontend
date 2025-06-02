@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Text } from 'react-native';
+import { Alert, StyleSheet, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Text, ScrollView, FlatList } from 'react-native';
 
 import FormBasicInfo from '../components/FormBasicInfo';
 import FormAddress from '../components/FormAddress';
 import FormOperatingHours from '../components/FormOperatingHours';
 
 import { addPoint } from '../services/ecoPointService';
+
 
 const DAYS_OF_WEEK_CONFIG = [
     { id: 1, key: 'segunda', label: 'Segunda-feira' },
@@ -143,30 +144,41 @@ export default function AddPointForm({ route, navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
         >
-            <ActualStep step={step} />
-            {step === 1 && (
-                <FormBasicInfo
-                name={name} setName={setName}
-                description={description} setDescription={setDescription}
-                selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes}
-                isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen}
-                />
-            )}
-            {step === 2 && (
-                <FormAddress
-                street={street} setStreet={setStreet}
-                number={number} setNumber={setNumber}
-                postcode={postcode} setPostcode={setPostcode}
-                neighborhood={neighborhood} setNeighborhood={setNeighborhood}
-                />
-            )}
-            {step === 3 && (
-                <FormOperatingHours
-                operatingHours={operatingHours} setOperatingHours={setOperatingHours}
-                DAYS_OF_WEEK_CONFIG={DAYS_OF_WEEK_CONFIG}
-                />
-            )}
-
+            <FlatList
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContentContainer}
+                keyboardShouldPersistTaps="handled"
+                ListHeaderComponent={
+                    <>
+                        <ActualStep step={step} />
+                        {step === 1 && (
+                            <FormBasicInfo
+                            name={name} setName={setName}
+                            description={description} setDescription={setDescription}
+                            selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes}
+                            isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen}
+                            />
+                        )}
+                        {step === 2 && (
+                            <FormAddress
+                            street={street} setStreet={setStreet}
+                            number={number} setNumber={setNumber}
+                            postcode={postcode} setPostcode={setPostcode}
+                            neighborhood={neighborhood} setNeighborhood={setNeighborhood}
+                            />
+                        )}
+                        {step === 3 && (
+                            <FormOperatingHours
+                            operatingHours={operatingHours} setOperatingHours={setOperatingHours}
+                            DAYS_OF_WEEK_CONFIG={DAYS_OF_WEEK_CONFIG}
+                            />
+                        )}
+                    </>
+                }
+                data={[]}
+                renderItem={() => null}
+                keyExtractor={(item, index) => index.toString()}
+            /> 
             <View style={styles.buttonsView}>
                 {step !== 1 ? (
                     <TouchableOpacity style={[styles.backButton, styles.button]} onPress={prevStep}>
@@ -185,7 +197,6 @@ export default function AddPointForm({ route, navigation }) {
                         <Text style={styles.textButton}>Enviar</Text>
                     </TouchableOpacity>
                 )}
-
             </View>
         </KeyboardAvoidingView>
     );
@@ -199,7 +210,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingBottom: 15,
+        paddingBottom: 30,
+    },
+    scrollView: {
+        flex: 1,
+    },
+    scrollContentContainer: {
+        paddingBottom: 20, 
     },
     goButton: {
         alignSelf: 'flex-end',
