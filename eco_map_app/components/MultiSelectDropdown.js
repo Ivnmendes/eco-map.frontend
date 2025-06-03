@@ -14,14 +14,13 @@ export default function MultiSelectDropdown({ value, setValue, open, setOpen }) 
             })));
         }
     }, [collectionTypes]);
-
     return (
         <View style={styles.container}>
             <Text style={styles.label}>Selecione o tipo de coleta:</Text>
             <DropDownPicker
                 listMode="FLATLIST"
                 open={open}
-                value={value}
+                value={value || []}
                 items={items}
                 setOpen={setOpen}
                 setValue={setValue}
@@ -30,7 +29,7 @@ export default function MultiSelectDropdown({ value, setValue, open, setOpen }) 
                 min={0}
                 placeholder={"Selecione as categorias:"}
                 mode="BADGE"
-                badgeDotColors={["green", "green", "green", "green", "green"]}
+                badgeDotColors={["green"]}
                 style={styles.dropdown}
                 textStyle={styles.dropdownText}
                 listItemLabelStyle={styles.listItemLabel}

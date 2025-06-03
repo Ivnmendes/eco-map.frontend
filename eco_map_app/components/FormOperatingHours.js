@@ -2,55 +2,38 @@ import React from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import CheckBox from 'expo-checkbox';
 
-export default function FormOperatingHours({ operatingHours, setOperatingHours, DAYS_OF_WEEK_CONFIG }) {
+export default function FormOperatingHours({ operatingHours, onOperatingHoursChange, DAYS_OF_WEEK_CONFIG }) {
     const handleCheckBoxChange = (dayId) => {
+        const dayData = operatingHours[dayId];
+        const newSelectedState = !dayData.selected;
+
         if (dayId === 8) {
-            const newSelected = !operatingHours[8].selected;
-            const updated = { ...operatingHours };
+            onOperatingHoursChange(dayId, { selected: newSelectedState, open: '', close: '' });
 
-            updated[8].selected = newSelected;
-
-            if (newSelected) {
-                for (let id = 1; id <= 5; id++) {
-                    updated[id].open = updated[8].open;
-                    updated[id].close = updated[8].close;
-                }
+            const timeToApply = { open: operatingHours[8].open, close: operatingHours[8].close };
+            for (let id = 1; id <= 5; id++) {
+                onOperatingHoursChange(id, newSelectedState ? timeToApply : {});
             }
-
-            setOperatingHours(updated);
         } else {
-            setOperatingHours(prevHours => ({
-                ...prevHours,
-                [dayId]: {
-                    ...prevHours[dayId],
-                    selected: !prevHours[dayId].selected,
-                    open: !prevHours[dayId].selected ? prevHours[dayId].open : '',
-                    close: !prevHours[dayId].selected ? prevHours[dayId].close : '',
-                }
-            }));
+            onOperatingHoursChange(dayId, { 
+                selected: newSelectedState,
+                open: newSelectedState ? dayData.open : '',
+                close: newSelectedState ? dayData.close : '',
+            });
         }
     };
 
     const handleTimeChange = (dayId, timeType, value) => {
         if (dayId === 8) {
-            const updated = { ...operatingHours };
-            updated[8][timeType] = value;
-
-            if (updated[8].selected) {
+            onOperatingHoursChange(dayId, { [timeType]: value });
+            
+            if (operatingHours[8].selected) {
                 for (let id = 1; id <= 5; id++) {
-                    updated[id][timeType] = value;
+                    onOperatingHoursChange(id, { [timeType]: value });
                 }
             }
-
-            setOperatingHours(updated);
         } else {
-            setOperatingHours(prevHours => ({
-                ...prevHours,
-                [dayId]: {
-                    ...prevHours[dayId],
-                    [timeType]: value,
-                }
-            }));
+            onOperatingHoursChange(dayId, { [timeType]: value });
         }
     };
 

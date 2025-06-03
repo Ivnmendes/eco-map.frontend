@@ -3,10 +3,8 @@ import { View, Text, TextInput, StyleSheet } from 'react-native';
 
 
 export default function FormAddress({
-    street, setStreet,
-    number, setNumber,
-    postcode, setPostcode,
-    neighborhood, setNeighborhood,
+    values,
+    onFieldChange,
 }) {
     return (
         <View style={styles.formContent}>
@@ -19,8 +17,8 @@ export default function FormAddress({
                 </View>
                 <TextInput
                     placeholder="ex: Rua Brasil"
-                    value={street}
-                    onChangeText={setStreet}
+                    value={values.street}
+                    onChangeText={(text) => onFieldChange('street', text)}
                     style={styles.input}
                 />
             </View>
@@ -32,8 +30,8 @@ export default function FormAddress({
                         </View>
                         <TextInput
                             placeholder="ex: 1299"
-                            value={number}
-                            onChangeText={setNumber}
+                            value={values.number}
+                            onChangeText={(text) => onFieldChange('number', text)}
                             style={[styles.input, styles.numberInput]}
                             keyboardType="numeric"
                         />
@@ -44,8 +42,8 @@ export default function FormAddress({
                         </View>
                         <TextInput
                             placeholder="ex: 97105-030"
-                            value={postcode}
-                            onChangeText={setPostcode}
+                            value={values.postcode}
+                            onChangeText={(text) => onFieldChange('postcode', text)}
                             style={[styles.input, styles.postcodeInput]}
                             keyboardType="numeric"
                         />
@@ -58,8 +56,8 @@ export default function FormAddress({
                 </View>
                 <TextInput
                     placeholder="ex: Camobi"
-                    value={neighborhood}
-                    onChangeText={setNeighborhood}
+                    value={values.neighborhood}
+                    onChangeText={(text) => onFieldChange('neighborhood', text)}
                     style={styles.input}
                 />
             </View>
