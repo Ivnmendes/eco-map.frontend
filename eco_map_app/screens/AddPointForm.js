@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Alert, StyleSheet, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Text, ScrollView, FlatList } from 'react-native';
 
 import FormBasicInfo from '../components/FormBasicInfo';
 import FormAddress from '../components/FormAddress';
 import FormOperatingHours from '../components/FormOperatingHours';
 
-import { addPoint } from '../services/ecoPointService';
-
+import { createCollectionPoint, uploadImageForPoint } from '../services/ecoPointService';
 
 const DAYS_OF_WEEK_CONFIG = [
     { id: 1, key: 'segunda', label: 'Segunda-feira' },
@@ -38,72 +37,110 @@ const ActualStep = ({ step }) => {
   );
 };
 
-export default function AddPointForm({ route, navigation }) {
-    const { latitude, longitude } = route.params || {};
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [street, setStreet] = useState('');
-    const [number, setNumber] = useState('');
-    const [neighborhood, setNeighborhood] = useState('');
-    const [postcode, setPostcode] = useState('');
-    const [selectedTypes, setSelectedTypes] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [operatingHours, setOperatingHours] = useState(() => {
-        const initialState = {};
-        DAYS_OF_WEEK_CONFIG.forEach(day => {
-            initialState[day.id] = {
-                name: day.label,
-                selected: false,
-                open: '',
-                close: ''
-            };
-        });
-        initialState[8] = {
-            name: 'Dia útil',
+const getInitialOperatingHours = () => {
+    const initialState = {};
+    DAYS_OF_WEEK_CONFIG.forEach(day => {
+        initialState[day.id] = {
+            name: day.label,
             selected: false,
             open: '',
             close: ''
         };
-
-        return initialState;
     });
-    const [step, setStep] = useState(1);
+    
+    initialState[8] = {
+        name: 'Dia útil',
+        selected: false,
+        open: '',
+        close: ''
+    };
+    return initialState;
+};
 
+export default function AddPointForm({ route, navigation }) {
+    const { latitude, longitude } = route.params || {};
+    const [loading, setLoading] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    
+    const [formData, setFormData] = useState({
+        name: '',
+        description: '',
+        latitude: latitude || '',
+        longitude: longitude || '',
+        street: '',
+        number: '',
+        postcode: '',
+        neighborhood: '',
+        types: [],
+        images: [],
+        operatingHours: getInitialOperatingHours(),
+    });
+
+    const handleFieldChange = (fieldName, value) => {
+        setFormData(currentData => ({
+            ...currentData,
+            [fieldName]: value
+        }));
+    };
+
+    const handleOperatingHoursChange = (dayId, newValues) => {
+        setFormData(currentData => ({
+            ...currentData,
+            operatingHours: {
+                ...currentData.operatingHours,
+                [dayId]: {
+                    ...currentData.operatingHours[dayId],
+                    ...newValues
+                }
+            }
+        }));
+    };
+
+    const memoizedSetValue = useCallback(
+        (updater) => {
+            setFormData(currentData => {
+            const updatedTypes = typeof updater === 'function'
+                ? updater(currentData.types)
+                : updater;
+            return {
+                ...currentData,
+                types: updatedTypes || [],
+            };
+            });
+        },
+        []
+    );
+
+    const [step, setStep] = useState(1);
     const withoutAddress = latitude && longitude;
 
     async function handleSubmit() {
         setLoading(true);
+
         try {
-            let point;
+            const pointData = {
+                name: formData.name,
+                description: formData.description,
+                latitude: formData.latitude,
+                longitude: formData.longitude,
+                street: formData.street,
+                number: formData.number,
+                postcode: formData.postcode,
+                neighborhood: formData.neighborhood,
+                types: formData.types,
+                operatingHours: formData.operatingHours,
+            };
 
-            if (withoutAddress) {
-                const roundedLatitude = latitude.toFixed(6);
-                const roundedLongitude = longitude.toFixed(6);
-                point = {
-                    name,
-                    description,
-                    types: selectedTypes.map(Number),
-                    operatingHours,
-                    latitude: roundedLatitude,
-                    longitude: roundedLongitude,
-                };
-            } else {
-                point = {
-                    name,
-                    description,
-                    types: selectedTypes.map(Number),
-                    operatingHours,
-                    street,
-                    number,
-                    postcode,
-                    neighborhood
-                }
-            }
+            const newPoint = await createCollectionPoint(pointData);
 
-            await addPoint(point);
+            Alert.alert("Ponto criado com sucesso", "fazendo upload de imagens...");
+            
+            const uploadPromises = formData.images.map(imageAsset =>
+                uploadImageForPoint(newPoint.id, imageAsset)
+            );
+            await Promise.all(uploadPromises);
 
-            Alert.alert('Sucesso', 'Ponto adicionado.');
+            Alert.alert('Sucesso', 'Imagens adicionadas.');
             navigation.replace('Main');
         } catch (error) {
             console.log(error.response?.data || error.message);
@@ -115,7 +152,7 @@ export default function AddPointForm({ route, navigation }) {
 
     function nextStep() {
         if (step === 1) {
-            if (!name || !description || selectedTypes.length === 0) {
+            if (!formData.name || !formData.description || formData.types.length === 0) {
                 alert('Preencha nome, descrição e selecione ao menos um tipo.');
                 return;
             }
@@ -124,7 +161,7 @@ export default function AddPointForm({ route, navigation }) {
             }
         }
         if (step === 2) {
-            if (!street || !number || !postcode || !neighborhood) {
+            if (!formData.street || !formData.number || !formData.postcode || !formData.neighborhood) {
                 alert('Preencha todos os campos do endereço.');
                 return;
             }
@@ -153,24 +190,23 @@ export default function AddPointForm({ route, navigation }) {
                         <ActualStep step={step} />
                         {step === 1 && (
                             <FormBasicInfo
-                            name={name} setName={setName}
-                            description={description} setDescription={setDescription}
-                            selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes}
-                            isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen}
+                                isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen}
+                                values={formData}
+                                onFieldChange={handleFieldChange}
+                                setValue={memoizedSetValue}
                             />
                         )}
                         {step === 2 && (
                             <FormAddress
-                            street={street} setStreet={setStreet}
-                            number={number} setNumber={setNumber}
-                            postcode={postcode} setPostcode={setPostcode}
-                            neighborhood={neighborhood} setNeighborhood={setNeighborhood}
+                                values={formData}
+                                onFieldChange={handleFieldChange}
                             />
                         )}
                         {step === 3 && (
                             <FormOperatingHours
-                            operatingHours={operatingHours} setOperatingHours={setOperatingHours}
-                            DAYS_OF_WEEK_CONFIG={DAYS_OF_WEEK_CONFIG}
+                                DAYS_OF_WEEK_CONFIG={DAYS_OF_WEEK_CONFIG}
+                                operatingHours={formData.operatingHours}
+                                onOperatingHoursChange={handleOperatingHoursChange}
                             />
                         )}
                     </>
@@ -210,7 +246,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingBottom: 30,
+        paddingBottom: 20,
     },
     scrollView: {
         flex: 1,

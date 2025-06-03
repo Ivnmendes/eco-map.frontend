@@ -1,14 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { View, Text, TextInput, StyleSheet } from 'react-native';
 import MultiSelectDropdown from './MultiSelectDropdown'; 
+import ImagePickerComponent from './imagePicker';
 
 export default function FormBasicInfo({
-    name, setName,
-    description, setDescription,
-    selectedTypes, setSelectedTypes,
-    isDropdownOpen, setIsDropdownOpen
+    values,
+    onFieldChange,
+    isDropdownOpen,
+    setIsDropdownOpen,
+    setValue
 }) {
-
     return (
         <View style={styles.formContent}>
             <View style={styles.textContainer}>
@@ -20,8 +21,8 @@ export default function FormBasicInfo({
                 </View>
                 <TextInput
                     placeholder="Nome"
-                    value={name}
-                    onChangeText={setName}
+                    value={values.name}
+                    onChangeText={(text) => onFieldChange('name', text)}
                     style={styles.input}
                 />
             </View>
@@ -31,17 +32,22 @@ export default function FormBasicInfo({
                 </View>
                 <TextInput
                     placeholder="Descrição"
-                    value={description}
-                    onChangeText={setDescription}
+                    value={values.description}
+                    onChangeText={(text) => onFieldChange('description', text)}
                     style={styles.input}
                 />
             </View>
+            <ImagePickerComponent
+                images={values.images} 
+                setImages={(images) => onFieldChange('images', images)}
+            />
             <View style={[styles.fieldContainer, isDropdownOpen && styles.dropdownContainerOpen]}>
                 <MultiSelectDropdown 
-                    value={selectedTypes} 
-                    setValue={setSelectedTypes}
+                    key="multi-select-dropdown"
+                    value={values.types} 
+                    setValue={setValue}
                     open={isDropdownOpen}
-                    setOpen={setIsDropdownOpen}    
+                    setOpen={setIsDropdownOpen}
                 />
             </View>
         </View>

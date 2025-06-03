@@ -41,22 +41,19 @@ function extractOperatingHours(operatingHours) {
 	return Array.from(dayMap.values());
 }
 
-export async function addPoint(point) {
-	let { name, description, latitude, longitude, types, street, number, postcode, neighborhood, operatingHours } = point;
 
-	const pointHasMapCoordinates = latitude !== undefined && longitude !== undefined;
+export async function createCollectionPoint(pointData) {
+	let { 
+        name, description, latitude, longitude, types, 
+        street, number, postcode, neighborhood, operatingHours 
+    } = pointData;
 
-	const operating_hours = extractOperatingHours(operatingHours);
+	const pointHasMapCoordinates = latitude !== undefined && latitude !== '';
 
 	if (!pointHasMapCoordinates) {
 		const response = await api.get('/geo-code/geocode/', {
-			params: {
-				street,
-				number,
-				postcode,
-				neighborhood
-			},
-			timeot: 5000
+			params: { street, number, postcode, neighborhood },
+			timeout: 5000
 		});
 
 		if (!response.data || !response.data.lat || !response.data.lon) {
@@ -67,20 +64,37 @@ export async function addPoint(point) {
 		longitude = response.data.lon;
 	}
 
-	latitude = parseFloat(latitude).toFixed(6);
-	longitude = parseFloat(longitude).toFixed(6);
-	
+	const processedHours = extractOperatingHours(operatingHours);
+
 	const payload = {
 		name,
 		description,
 		types,
-		latitude,
-		longitude,
-		operating_hours
+		latitude: parseFloat(latitude).toFixed(6),
+		longitude: parseFloat(longitude).toFixed(6),
+		operating_hours: processedHours
 	};
 
-	return await api.post('/eco-points/collection-point/', payload);
+	const response = await api.post('/eco-points/collection-point/', payload);
+    return response.data;
 }
+
+export async function uploadImageForPoint(pointId, imageAsset) {
+    const formData = new FormData();
+
+    formData.append('image', {
+        uri: imageAsset.uri,
+        type: imageAsset.mimeType || 'image/jpeg',
+        name: imageAsset.fileName || `point_image_${Date.now()}.jpg`,
+    });
+
+    return await api.post(`/eco-points/collection-point/${pointId}/upload_image/`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+}
+
 
 export async function reverseGeocodeApi(latitude, longitude) {
 	const response = await api.get(`/geo-code/reverse-geocode/`, { 

@@ -1,7 +1,7 @@
-import React, { useContext, useMemo } from 'react';
-import { Image, View, StyleSheet, Text, ActivityIndicator } from 'react-native'; 
+import React, { useContext, useMemo, useState } from 'react';
+import { Image, View, StyleSheet, Text, ActivityIndicator, FlatList } from 'react-native'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 
 import { DataContext } from '../context/DataContext';
 import { useReverseGeocode } from '../hooks/useReverseGeocode';
@@ -30,6 +30,7 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
     const snapPoints = useMemo(() => ['50%', '88%'], []);
     const { collectionTypes } = useContext(DataContext);
     const { bottom: safeAreaBottom } = useSafeAreaInsets();
+    const [isVerticalScrollDisabled, setIsVerticalScrollDisabled] = useState(false);
 
     const { address, isLoading: isAddressLoading } = useReverseGeocode(
         selectedMarker?.latitude,
@@ -62,7 +63,6 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
         const operatingHours = selectedMarker.operating_hours;
         if (Array.isArray(operatingHours) && operatingHours.length > 0) {
             return operatingHours.map((day, index) => (
-                <>
                 <View key={day.day_of_week} style={styles.dayContainer} >
                     <Text style={styles.dayText}>
                         {days[day.day_of_week - 1]}:
@@ -75,7 +75,6 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
                         {day.closing_time.slice(0, 5)}
                     </Text>
                 </View>
-                </>
             ));
         } else {
             return <Text style={styles.typesLabel}>Horário não disponível</Text>;
@@ -103,7 +102,7 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
             backgroundStyle={styles.bottomSheetBackground}
             bottomInset={safeAreaBottom}
         >
-            <BottomSheetScrollView contentContainerStyle={styles.scrollViewContentContainer}>
+            <BottomSheetScrollView contentContainerStyle={styles.scrollViewContentContainer} scrollEnabled={!isVerticalScrollDisabled}>
                 <Text style={styles.markerTitle}>{selectedMarker.name || 'Ponto de Coleta'}</Text>
                 <View style={styles.addressContainer}>
                     {isAddressLoading ? (
@@ -122,7 +121,25 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
                     </View>
                 </View>
                 <View style={styles.separator}/>
-                <Image source={ require('../assets/coletaseletiva-cke.webp') } style={styles.pointImage} resizeMode='cover'/>
+                <View style={{ height: 210, marginBottom: 16 }}>
+                    <BottomSheetFlatList
+                        data={selectedMarker.images || []}
+                        renderItem={({ item, index }) => (
+                            <View style={{ marginRight: index === selectedMarker.images.length - 1 ? 0 : 10 }}>
+                                <Image source={{ uri: item.image }} style={styles.pointImage} />
+                            </View>
+                        )}
+                        keyExtractor={(item) => item.id.toString()}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        nestedScrollEnabled
+                        contentContainerStyle={{ paddingRight: 20 }}
+                        style={styles.list}
+                        onScrollBeginDrag={() => setIsVerticalScrollDisabled(true)}
+                        onScrollEndDrag={() => setIsVerticalScrollDisabled(false)}
+                        removeClippedSubviews={false}
+                    />
+                </View>
                 <View style={styles.separator}/>
                 <View style={styles.opratingHoursContainer}>
                     <Text style={styles.typesLabel}>Horário de Funcionamento:</Text>
@@ -195,7 +212,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     pointImage: {
-        width: '100%',
+        width: 366,
         height: 200,
         borderRadius: 10,
         marginBottom: 16,
@@ -238,4 +255,7 @@ const styles = StyleSheet.create({
     opratingHoursContainer: {
         marginBottom: 20,
     },
+    list: {
+        flexGrow: 0,
+    }
 });
