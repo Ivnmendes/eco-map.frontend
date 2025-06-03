@@ -1,8 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
-import { API_URL } from '../constants';
 import { Alert } from 'react-native';
-import { getAccessToken } from '../services/authService';
+import { fetchCollectionTypes, fetchUserData, fetchCollectionPoints as fetchCollectionPointsApi } from '../services/api';
 
 export const DataContext = createContext();
 
@@ -15,43 +13,21 @@ export function DataProvider({ children }) {
     async function loadInitialData() {
         if (initialDataLoaded) return;
         try {
-        const access = await getAccessToken();
-
-        const { data } = await axios.get(
-            `${API_URL}/eco-points/collection-type/`,
-            {
-            headers: {
-                Authorization: `Bearer ${access}`,
-            },
-            }
-        );
+        const data = await fetchCollectionTypes();
         setCollectionTypes(data);
 
-        const userData = await axios.get(`${API_URL}/accounts/me/`, {
-            headers: {
-            Authorization: `Bearer ${access}`,
-            },
-        });
+        const userData = await fetchUserData();
         setUserDetails(userData);
         setInitialDataLoaded(true);
         } catch (error) {
-        console.log(error.request);
-        Alert.alert('Erro', 'Erro interno ao carregar categorias');
+            console.log(error.request);
+            Alert.alert('Erro', 'Erro interno ao carregar categorias');
         }
     }
 
     async function fetchCollectionPoints(params) {
         try {
-            const access = await getAccessToken();
-            const { data } = await axios.get(
-                `${API_URL}/eco-points/collection-point/`,
-                { 
-                    params, 
-                    headers: {
-                        Authorization: `Bearer ${access}`
-                    },
-                }
-            );
+            const data = await fetchCollectionPointsApi(params);
             setCollectionPoints(data);
         } catch (error) {
             Alert.alert("Erro", "Erro interno ao carregar pontos de coleta");

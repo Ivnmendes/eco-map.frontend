@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { getAccessToken, getRefreshToken, saveTokens, clearTokens } from './authService';
 
+import { getAccessToken, getRefreshToken, saveTokens, clearTokens } from './authService';
 import navigate from './navigationService';
 import { API_URL } from '../constants';
 
@@ -105,4 +105,19 @@ export async function register(data) {
     return response.data;
 }
 
+export async function fetchCollectionTypes() {
+	const response = await api.get('/eco-points/collection-type/');
+	return response.data;
+}
+
 export default api;
+
+export async function fetchUserData() {
+	const response = await api.get('/accounts/me/');
+	return response.data;
+}
+
+export async function fetchCollectionPoints(params) {
+	const response = await api.get('/eco-points/collection-point/', { params });
+	return response.data;
+}
