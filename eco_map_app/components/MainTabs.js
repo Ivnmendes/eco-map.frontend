@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import HomeScreen from '../screens/HomeScreen';
 import AccountScreen from '../screens/AccountScreen';
-import TesteScreen from '../screens/TesteScreen';
+import InfoScreen from '../screens/InfoScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -18,10 +18,10 @@ export default function MainTabs() {
     
           if (route.name === 'Home') {
             iconName = 'map-outline';
-          } else if (route.name === 'Account') {
+          } else if (route.name === 'Conta') {
             iconName = 'person-circle-outline';
-          } else if (route.name === 'Teste') {
-            iconName = 'ios-list';
+          } else if (route.name === 'Informações') {
+            iconName = 'help-outline';
           }
     
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -45,9 +45,9 @@ export default function MainTabs() {
         }
       })}
     >
-      <Tab.Screen name="Teste" component={TesteScreen} />
+      <Tab.Screen name="Informações" component={InfoScreen} />
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Account" component={AccountScreen} />
+      <Tab.Screen name="Conta" component={AccountScreen} />
     </Tab.Navigator>
   );
 }
