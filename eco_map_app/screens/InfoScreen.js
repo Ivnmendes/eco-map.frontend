@@ -23,10 +23,7 @@ export default function InfoScreen() {
     );
 
     const onShouldStartLoadWithRequest = useCallback((request) => {
-        const initialUrl = 'https://www.santamaria.rs.gov.br/descarte-legal/';
         const allowedBaseHost = 'www.santamaria.rs.gov.br/descarte-legal';
-
-        console.log('Tentativa de navegação para:', request.url);
 
         if (request.url.includes(allowedBaseHost)) {
             console.log('Navegação permitida para:', request.url);
@@ -40,16 +37,10 @@ export default function InfoScreen() {
                 [
                     {
                         text: 'Cancelar',
-                        onPress: () => console.log('Navegação externa cancelada'),
                         style: 'cancel',
                     },
                     {
                         text: 'Abrir no Navegador',
-                        onPress: () => {
-                            Linking.openURL(request.url).catch(err =>
-                                console.error("Não foi possível abrir o link externo", err)
-                            );
-                        },
                     },
                 ],
                 { cancelable: true }
@@ -84,7 +75,6 @@ export default function InfoScreen() {
                 onLoadEnd={() => setIsLoading(false)} 
                 onError={(syntheticEvent) => {
                     const { nativeEvent } = syntheticEvent;
-                    console.log('Erro ao carregar a página:', nativeEvent);
                     setError(`Código: ${nativeEvent.code}, Descrição: ${nativeEvent.description}`);
                     setIsLoading(false);
                 }}

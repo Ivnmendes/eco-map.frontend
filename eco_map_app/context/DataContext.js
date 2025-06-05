@@ -13,12 +13,12 @@ export function DataProvider({ children }) {
     async function loadInitialData() {
         if (initialDataLoaded) return;
         try {
-        const data = await fetchCollectionTypes();
-        setCollectionTypes(data);
+            const data = await fetchCollectionTypes();
+            setCollectionTypes(data);
 
-        const userData = await fetchUserData();
-        setUserDetails(userData);
-        setInitialDataLoaded(true);
+            const userData = await fetchUserData();
+            setUserDetails(userData);
+            setInitialDataLoaded(true);
         } catch (error) {
             console.log(error.request);
             Alert.alert('Erro', 'Erro interno ao carregar categorias');
@@ -45,7 +45,7 @@ export function DataProvider({ children }) {
             loadInitialData
         }}
         >
-        {children}
+            {children}
         </DataContext.Provider>
     );
 }

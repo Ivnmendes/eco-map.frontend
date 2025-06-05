@@ -1,38 +1,89 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Button, Text, Alert } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { View, StyleSheet, Button, Text, Alert, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { logout } from '../services/api';
+import { DataContext } from '../context/DataContext';
 
 export default function HomeScreen({ navigation }) {
     const [loading, setLoading] = useState(false);
+    const { userDetails } = useContext(DataContext);
+
+    const insets = useSafeAreaInsets();
 
     async function handleLogout() {
         setLoading(true);
         try {
-          await logout();
-          navigation.replace('Login');
+            await logout();
+            navigation.replace('Login');
         } catch (error) {
-          console.log(error.response?.data || error.message);
-          Alert.alert('Erro', 'Ocorreu um erro interno');
+            console.log(error.response?.data || error.message);
+            Alert.alert('Erro', 'Ocorreu um erro interno');
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
     }
 
     return (
-        <View style={styles.container}>
-            <Button title={loading ? 'Carregando...' : 'Sair'} onPress={handleLogout} disabled={loading}/>
+        <View style={[styles.container, { paddingTop: insets.top }]}>
+            <View style={styles.userContainer}>
+                <View style={styles.fieldItem}>
+                    <Ionicons name="person-circle-outline" size={40} color="gray" />
+                </View>
+                <View style={styles.fieldItem}>
+                    <Text style={styles.textField}>Bem vindo, {userDetails.first_name} {userDetails.last_name}</Text>
+                </View>
+            </View>
+            <View style={styles.separator}/>
+            <View style={styles.buttonsView}>
+                <TouchableOpacity onPress={handleLogout} disabled={loading} style={styles.button}>
+                    <Text style={styles.buttonText}>{loading ? 'Carregando...' : 'Sair'}</Text>
+                </TouchableOpacity>
+            </View>
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', padding: 16 },
-    input: {
-      borderWidth: 1,
-      borderColor: '#888',
-      marginBottom: 12,
-      padding: 10,
-      borderRadius: 5,
+    container: { 
+        flex: 1, 
+        justifyContent: 'flex-start', 
+        marginTop: "15%",
+        paddingHorizontal: 20, 
+    },
+    userContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    fieldItem: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 1,
+        marginRight: 10,
+    },
+    textField: {
+        fontSize: 18,
+        marginVertical: 5,
+        textAlign: 'center',
+    },
+    buttonsView: {
+        marginTop: 'auto',
+        marginBottom: 300,
+    },
+    button: {
+        backgroundColor: 'green',
+        padding: 10,
+        borderRadius: 10,
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 18,
+        textAlign: 'center',
+    },
+    separator: {
+        height: 1,
+        backgroundColor: '#333',
+        marginBottom: 13,
     },
 });
