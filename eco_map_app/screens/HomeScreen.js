@@ -7,6 +7,7 @@ import { DataContext } from '../context/DataContext';
 import CollectionTypeCarousel from '../components/CollectionTypeCarousel';
 import MapContainer from '../components/MapContainer';
 import FloatingButtons from '../components/FloatingButtons';
+import { reload } from 'expo-router/build/global-state/routing';
 
 export default function HomeScreen({ navigation }) {
     const [loadingLocation, setLoadingLocation] = useState(false);
@@ -18,9 +19,10 @@ export default function HomeScreen({ navigation }) {
         longitudeDelta: 0.01,
     });
     const [hasPermission, setHasPermission] = useState(false);
-    const { collectionPoints, fetchCollectionPoints, collectionTypes, loadInitialData } = useContext(DataContext);
+    const { collectionPoints, fetchCollectionPoints, collectionTypes, loadInitialData, userDetails } = useContext(DataContext);
     const isFirstLoad = useRef(true);
     const [selectedCategoryTypes, setSelectedCategoryTypes] = useState([]);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useFocusEffect(
         React.useCallback(() => {
@@ -33,9 +35,13 @@ export default function HomeScreen({ navigation }) {
 
     async function reloadFetchCollectionPoints() {
         setLoadingPoints(true);
-        await fetchCollectionPoints();
+        await fetchCollectionPoints(isAdmin);
         setLoadingPoints(false);
     }
+
+    useEffect(() => {
+        reloadFetchCollectionPoints(!isAdmin);
+    }, [isAdmin]);
 
     useEffect(() => {
         reloadFetchCollectionPoints();
@@ -86,15 +92,10 @@ export default function HomeScreen({ navigation }) {
         }
     }
 
-    function handleSelectCollectionType(id) {
-        console.log('Selecionado tipo:', id);
-    }
-
     return (
         <View style={{ flex: 1 }}>
             <CollectionTypeCarousel
                 collectionTypes={collectionTypes?.results || []}
-                onSelectCollectionType={handleSelectCollectionType}
                 selectedCategoryTypes={selectedCategoryTypes}
                 setSelectedCategoryTypes={setSelectedCategoryTypes}
             />
@@ -105,6 +106,7 @@ export default function HomeScreen({ navigation }) {
                 collectionPoints={collectionPoints?.results || []}
                 filters={selectedCategoryTypes}
                 collectionTypes={collectionTypes}
+                isAdmin={isAdmin}
             />
 
             <FloatingButtons
@@ -113,6 +115,9 @@ export default function HomeScreen({ navigation }) {
                 onUpdateLocation={handleUpdateLocation}
                 onReloadPoints={reloadFetchCollectionPoints}
                 onAddPoint={handleAddPoint}
+                isStaff={userDetails?.is_staff}
+                setIsAdmin={setIsAdmin}
+                isAdmin={isAdmin}
             />
         </View>
     );

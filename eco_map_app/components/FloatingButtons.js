@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react';
 import { TouchableOpacity, StyleSheet, Animated, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function FloatingButtons({ loadingLocation, loadingPoints, onUpdateLocation, onReloadPoints, onAddPoint }) {
+
+export default function FloatingButtons({ loadingLocation, loadingPoints, onUpdateLocation, onReloadPoints, onAddPoint, isStaff, isAdmin, setIsAdmin }) {
     const [expanded, setExpanded] = useState(false);
     const animation = useRef(new Animated.Value(0)).current;
 
@@ -66,6 +67,18 @@ export default function FloatingButtons({ loadingLocation, loadingPoints, onUpda
                     <Ionicons name="add-circle-outline" size={28} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
+
+            {isStaff && (
+                <Animated.View pointerEvents={expanded ? 'auto' : 'none'} style={[styles.animatedButtonContainer, getButtonStyle(380)]}>
+                    <TouchableOpacity style={styles.floatingButton} onPress={() => {
+                            setIsAdmin(!isAdmin)
+                        }
+                    }>
+                        <Ionicons name="settings-outline" size={28} color="#fff" />
+                    </TouchableOpacity>
+                </Animated.View>
+            )}
+            
         </>
     );
 }

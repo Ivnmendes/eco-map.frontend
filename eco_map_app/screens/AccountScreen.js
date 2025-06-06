@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, StyleSheet, Button, Text, Alert, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, Text, Alert, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -36,8 +36,11 @@ export default function HomeScreen({ navigation }) {
                 <View style={styles.fieldItem}>
                     <Ionicons name="person-circle-outline" size={40} color="gray" />
                 </View>
-                <View style={styles.fieldItem}>
-                    <Text style={styles.textField}>Bem vindo, {userDetails.first_name} {userDetails.last_name}</Text>
+                <View style={[styles.fieldItem, {marginLeft: 40}]}>
+                    <Text style={styles.textField}>
+                        Bem vindo, {userDetails.first_name} {userDetails.last_name}
+                        {userDetails.is_staff ? '\nUsuário administrador' : null}
+                        </Text>
                 </View>
             </View>
             <View style={styles.separator}/>

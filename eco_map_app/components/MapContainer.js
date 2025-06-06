@@ -5,7 +5,12 @@ import BottomSheetMapView from './BottomSheetMapView';
 
 import { navigate } from '../services/navigationService';
 
-export default function MapContainer({ region, mapRef, collectionPoints, filters, collectionTypes}) {
+const pinColors = {
+    true: 'red', 
+    false: 'yellow',
+}
+
+export default function MapContainer({ region, mapRef, collectionPoints, filters, collectionTypes, isAdmin}) {
     const [buttonPos, setButtonPos] = useState(null);
     const [latitude, setLatitude] = useState(null);
     const [longitude, setLongitude] = useState(null);
@@ -55,10 +60,6 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
             return collectionPoints;
         }
 
-        console.log('aqui1 collectionPoints', collectionPoints);
-        console.log('aqui2 filters', filters);
-        console.log('aqui3 collectionTypes', collectionTypes);
-
         return collectionPoints.filter(point =>
             point.types.some(typeId => { return filters.includes(typeId) })
         );
@@ -90,6 +91,7 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
                             longitude: Number(point.longitude),
                         }}
                         onPress={() => handleMarkerPress(point)}
+                        pinColor={pinColors[collectionPoints.is_active]}
                         />
                     );
                 })}

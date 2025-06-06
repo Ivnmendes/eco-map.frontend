@@ -17,6 +17,7 @@ export function DataProvider({ children }) {
             setCollectionTypes(data);
 
             const userData = await fetchUserData();
+            console.log('User Data:', userData);
             setUserDetails(userData);
             setInitialDataLoaded(true);
         } catch (error) {

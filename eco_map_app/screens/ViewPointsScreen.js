@@ -17,7 +17,6 @@ const convertPointStatus = (status) => {
 };
 
 const getStatusColor = (status) => {
-    console.log('Status:', status);
     switch (status) {
         case 'pending':
             return 'orange';
