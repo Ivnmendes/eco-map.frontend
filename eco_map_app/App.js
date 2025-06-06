@@ -3,7 +3,6 @@ import { View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { navigationRef } from './services/navigationService';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -12,11 +11,13 @@ import RegisterScreen from './screens/RegisterScreen';
 
 import { DataProvider } from './context/DataContext';
 
-import MainTabs from './components/MainTabs'
+import MainTabs from './components/MainTabs';
 
 import { verifyOrRefreshTokens } from './services/api.js';
 import AddPointForm from './screens/AddPointForm.js';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import ViewPointsScreen from './screens/ViewPointsScreen.js';
+import PointDetailScreen from './screens/PointDetailScreen.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -50,17 +51,17 @@ export default function App() {
                                 <>
                                 <Stack.Screen name="Main" component={MainTabs} />
                                 <Stack.Screen name="Login" component={LoginScreen} />
-                                <Stack.Screen name="Register" component={RegisterScreen} />
-                                <Stack.Screen name="AddPointForm" component={AddPointForm} />
                                 </>
                             ) : (
                                 <>
                                 <Stack.Screen name="Login" component={LoginScreen} />
-                                <Stack.Screen name="Register" component={RegisterScreen} />
                                 <Stack.Screen name="Main" component={MainTabs} />
-                                <Stack.Screen name="AddPointForm" component={AddPointForm} />
                                 </>
                             )}
+                            <Stack.Screen name="Register" component={RegisterScreen} />
+                            <Stack.Screen name="AddPointForm" component={AddPointForm} />
+                            <Stack.Screen name="PointsList" component={ViewPointsScreen} />
+                            <Stack.Screen name="PointDetail" component={PointDetailScreen} />
                             </Stack.Navigator>
                         </NavigationContainer>
                     </BottomSheetModalProvider>

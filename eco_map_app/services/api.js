@@ -11,6 +11,7 @@ const api = axios.create({
 
 async function refreshAccessToken() {
 	const refresh = await getRefreshToken();
+	console.log('refresh token:', refresh);
 	if (!refresh) throw new Error('No refresh token');
 
 	const response = await axios.post(`${API_URL}/accounts/token/refresh/`, { refresh });
@@ -50,6 +51,7 @@ api.interceptors.response.use(
 				originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 				return api(originalRequest);
 			} catch (err) {
+				console.log(err);
 				await clearTokens();
 				navigate('login');
 				return Promise.reject(err);
@@ -117,7 +119,10 @@ export async function fetchUserData() {
 	return response.data;
 }
 
-export async function fetchCollectionPoints(params) {
-	const response = await api.get('/eco-points/collection-point/', { params });
-	return response.data;
+export async function fetchCollectionPoints(active) {
+	if (active) {
+		return (await api.get('/eco-points/collection-points/active/')).data;
+	}
+	
+	return (await api.get('/eco-points/collection-points/inactive/')).data;
 }

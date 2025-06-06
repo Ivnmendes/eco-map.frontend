@@ -75,7 +75,7 @@ export async function createCollectionPoint(pointData) {
 		operating_hours: processedHours
 	};
 
-	const response = await api.post('/eco-points/collection-point/', payload);
+	const response = await api.post('/eco-points/collection-points/', payload);
     return response.data;
 }
 
@@ -102,3 +102,21 @@ export async function reverseGeocodeApi(latitude, longitude) {
 	});
 	return response.data;
 };
+
+export async function getUserCollectionPoints(page) {
+    const response = await api.get('/eco-points/collection-points/my-pending/', {
+        params: { page }
+    });
+    if (response.status !== 200) {
+        throw new Error('Erro ao obter pontos de coleta do usuário');
+    }
+    return response.data;   
+}
+
+export async function deletePoint(pointId) {
+    const response = await api.delete(`/eco-points/collection-points/${pointId}/`);
+    if (response.status !== 204) {
+        throw new Error('Erro ao deletar ponto de coleta');
+    }
+    return response.data;
+}

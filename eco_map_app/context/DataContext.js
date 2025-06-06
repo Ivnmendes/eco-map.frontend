@@ -25,13 +25,12 @@ export function DataProvider({ children }) {
         }
     }
 
-    async function fetchCollectionPoints(params) {
+    async function fetchCollectionPoints(active = true) {
         try {
-            const data = await fetchCollectionPointsApi(params);
+            const data = await fetchCollectionPointsApi(active);
             setCollectionPoints(data);
         } catch (error) {
             Alert.alert("Erro", "Erro interno ao carregar pontos de coleta");
-            console.log(error.response)
         }
     }
 

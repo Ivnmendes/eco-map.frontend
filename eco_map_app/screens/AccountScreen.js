@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, StyleSheet, Button, Text, Alert, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Button, Text, Alert, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -25,8 +25,13 @@ export default function HomeScreen({ navigation }) {
         }
     }
 
+    function handleViewPoints() {
+        navigation.navigate('PointsList');
+    }
+
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
+            <Image source={require('../assets/logo.png')} style={styles.image} />
             <View style={styles.userContainer}>
                 <View style={styles.fieldItem}>
                     <Ionicons name="person-circle-outline" size={40} color="gray" />
@@ -37,6 +42,9 @@ export default function HomeScreen({ navigation }) {
             </View>
             <View style={styles.separator}/>
             <View style={styles.buttonsView}>
+                <TouchableOpacity onPress={handleViewPoints} disabled={loading} style={styles.button}>
+                    <Text style={styles.buttonText}>Ver pontos submetidos</Text>
+                </TouchableOpacity>
                 <TouchableOpacity onPress={handleLogout} disabled={loading} style={styles.button}>
                     <Text style={styles.buttonText}>{loading ? 'Carregando...' : 'Sair'}</Text>
                 </TouchableOpacity>
@@ -51,6 +59,12 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start', 
         marginTop: "15%",
         paddingHorizontal: 20, 
+    },
+    image: {
+        width: 300,
+        height: 300,
+        alignSelf: 'center',
+        marginBottom: 20,
     },
     userContainer: {
         flexDirection: 'row',
@@ -68,6 +82,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     buttonsView: {
+        marginTop: '5%'
+    },
+    bottomButtonsView: {
         marginTop: 'auto',
         marginBottom: 300,
     },
@@ -75,6 +92,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'green',
         padding: 10,
         borderRadius: 10,
+        marginBottom: 10,
     },
     buttonText: {
         color: 'white',
@@ -84,6 +102,6 @@ const styles = StyleSheet.create({
     separator: {
         height: 1,
         backgroundColor: '#333',
-        marginBottom: 13,
+        marginBottom: 70,
     },
 });
