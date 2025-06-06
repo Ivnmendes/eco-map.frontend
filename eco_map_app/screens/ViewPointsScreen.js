@@ -3,13 +3,44 @@ import { View, StyleSheet, Text, Alert, TouchableOpacity, ActivityIndicator, Fla
 
 import { getUserCollectionPoints, deletePoint } from '../services/ecoPointService';
 
+const convertPointStatus = (status) => {
+    switch (status) {
+        case 'pending':
+            return 'Pendente';
+        case 'approved':
+            return 'Aprovado';
+        case 'rejected':
+            return 'Rejeitado';
+        default:
+            return 'Desconhecido';
+    }
+};
+
+const getStatusColor = (status) => {
+    console.log('Status:', status);
+    switch (status) {
+        case 'pending':
+            return 'orange';
+        case 'approved':
+            return 'green';
+        case 'rejected':
+            return 'red';
+        default:
+            return 'gray'; 
+    }
+}
+
 const PointItem = ({ point, navigation, onDelete }) => (
     <View style={styles.pointContainer}>
-        <View style={styles.pointField}>
-            <Text style={styles.pointName}>{point.name}</Text>
-        </View>
-        <View style={styles.pointField}>
-            <Text style={styles.pointDescription}>{point.description}</Text>
+        <View style={styles.header}>
+            <View style={styles.headerComponent}>
+                <View style={styles.pointField}>
+                    <Text style={styles.pointName}>{point.name}</Text>
+                </View>
+            </View>
+            <View style={styles.headerComponent}>
+                <Text style={[styles.statusText, { backgroundColor: getStatusColor(point.status) }]}>{convertPointStatus(point.status)}</Text>
+            </View>
         </View>
         <View style={styles.pointField}>
             <TouchableOpacity style={styles.buttonPoint} onPress={() => navigation.navigate('PointDetail', { point: point })}>
@@ -158,5 +189,25 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         textAlign: 'center',
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,        
+        width: '100%',
+    },
+    headerComponent: {
+        width: '50%',
+        marginRight: 50,
+    },
+    statusText: {
+        padding: 10,
+        fontSize: 16,
+        borderRadius: 5,
+        width: '70%',
+        textAlign: 'center',
+        color: 'white',
+        fontWeight: 'bold',
     },
 });
