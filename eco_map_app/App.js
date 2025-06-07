@@ -18,6 +18,7 @@ import AddPointForm from './screens/AddPointForm.js';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import ViewPointsScreen from './screens/ViewPointsScreen.js';
 import PointDetailScreen from './screens/PointDetailScreen.js';
+import AddCategoryForm from './screens/AddCategoryForm.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -62,6 +63,7 @@ export default function App() {
                             <Stack.Screen name="AddPointForm" component={AddPointForm} />
                             <Stack.Screen name="PointsList" component={ViewPointsScreen} />
                             <Stack.Screen name="PointDetail" component={PointDetailScreen} />
+                            <Stack.Screen name="AddCategoryForm" component={AddCategoryForm} />
                             </Stack.Navigator>
                         </NavigationContainer>
                     </BottomSheetModalProvider>

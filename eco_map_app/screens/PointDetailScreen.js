@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 16,
-        backgroundColor: 'green',
+        backgroundColor: '#256D5B',
         color: 'white',
         fontWeight: 'bold',
         overflow: 'hidden',

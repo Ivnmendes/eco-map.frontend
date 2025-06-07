@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Alert, TouchableOpacity, ActivityIndicator, FlatList, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Text, Alert, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getUserCollectionPoints, deletePoint } from '../services/ecoPointService';
 
@@ -60,6 +61,7 @@ export default function ViewPointsScreen({ navigation }) {
     const [page, setPage] = useState(1);
     const [points, setPoints] = useState([]);
     const [refetchTrigger, setRefetchTrigger] = useState(0);
+    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         const fetchData = async () => {  
@@ -124,7 +126,7 @@ export default function ViewPointsScreen({ navigation }) {
                 keyExtractor={(item) => item.id.toString()}
                 ListHeaderComponent={<Text style={styles.text}>Pontos submetidos:</Text>}
                 ListEmptyComponent={<Text style={styles.noPoints}>Nenhum ponto encontrado.</Text>}
-                contentContainerStyle={styles.listContentContainer}
+                contentContainerStyle={[styles.listContentContainer, { paddingBottom: insets.bottom }]}
             />
         </SafeAreaView>
     );
@@ -132,7 +134,6 @@ export default function ViewPointsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: '15%',
         flex: 1,
         backgroundColor: '#fff',
     },
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
         color: 'gray',
     },
     buttonPoint: {
-        backgroundColor: 'green',
+        backgroundColor: '#256D5B',
         padding: 10,
         borderRadius: 5,
         marginTop: 10,

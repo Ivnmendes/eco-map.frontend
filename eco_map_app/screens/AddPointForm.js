@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
         width: 130,
         borderRadius: 50,
         padding: 10,
-        backgroundColor: 'green',
+        backgroundColor: '#256D5B',
     },
     textButton: {
         color: 'white',
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
     },
     filledCircle: {
-        backgroundColor: 'green',
+        backgroundColor: '#256D5B',
         borderColor: '#aaa',
     },
     notFilledCircle: {

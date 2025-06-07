@@ -83,7 +83,7 @@ export default function FormOperatingHours({ operatingHours, onOperatingHoursCha
                                             style={styles.checkBox}
                                             value={dayData.selected}
                                             onValueChange={() => handleCheckBoxChange(day.id)}
-                                            color={dayData.selected ? 'green' : undefined}
+                                            color={dayData.selected ? '#256D5B' : undefined}
                                         />
                                     </View>
                                     {dayData.selected && (
@@ -129,7 +129,7 @@ export default function FormOperatingHours({ operatingHours, onOperatingHoursCha
                                     style={styles.checkBox}
                                     value={operatingHours[8].selected}
                                     onValueChange={() => handleCheckBoxChange(8)}
-                                    color={operatingHours[8].selected ? 'green' : undefined}
+                                    color={operatingHours[8].selected ? '#256D5B' : undefined}
                                 />
                             </View>
                             {operatingHours[8].selected && (

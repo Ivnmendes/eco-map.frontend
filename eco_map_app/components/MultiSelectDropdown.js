@@ -29,7 +29,7 @@ export default function MultiSelectDropdown({ value, setValue, open, setOpen }) 
                 min={0}
                 placeholder={"Selecione as categorias:"}
                 mode="BADGE"
-                badgeDotColors={["green"]}
+                badgeDotColors={["#256D5B"]}
                 style={styles.dropdown}
                 textStyle={styles.dropdownText}
                 listItemLabelStyle={styles.listItemLabel}

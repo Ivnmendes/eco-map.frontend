@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
         shadowRadius: 3,
     },
     buttonSelected: {
-        backgroundColor: 'green',
+        backgroundColor: '#256D5B',
     },
     text: {
         marginLeft: 8,
