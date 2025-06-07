@@ -8,7 +8,7 @@ import { DataContext } from '../context/DataContext';
 
 export default function HomeScreen({ navigation }) {
     const [loading, setLoading] = useState(false);
-    const { userDetails } = useContext(DataContext);
+    const { userDetails, clearContextData } = useContext(DataContext);
 
     const insets = useSafeAreaInsets();
 
@@ -16,6 +16,7 @@ export default function HomeScreen({ navigation }) {
         setLoading(true);
         try {
             await logout();
+            clearContextData();
             navigation.replace('Login');
         } catch (error) {
             console.log(error.response?.data || error.message);
@@ -48,6 +49,11 @@ export default function HomeScreen({ navigation }) {
                 <TouchableOpacity onPress={handleViewPoints} disabled={loading} style={styles.button}>
                     <Text style={styles.buttonText}>Ver pontos submetidos</Text>
                 </TouchableOpacity>
+                {userDetails.is_staff && (
+                    <TouchableOpacity onPress={() => navigation.navigate('AddCategoryForm')} disabled={loading} style={styles.button}>
+                        <Text style={styles.buttonText}>Adicionar categoria</Text>
+                    </TouchableOpacity>
+                )}
                 <TouchableOpacity onPress={handleLogout} disabled={loading} style={styles.button}>
                     <Text style={styles.buttonText}>{loading ? 'Carregando...' : 'Sair'}</Text>
                 </TouchableOpacity>
@@ -92,7 +98,7 @@ const styles = StyleSheet.create({
         marginBottom: 300,
     },
     button: {
-        backgroundColor: 'green',
+        backgroundColor: '#256D5B',
         padding: 10,
         borderRadius: 10,
         marginBottom: 10,
