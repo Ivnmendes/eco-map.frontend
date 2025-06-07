@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import { useContext } from 'react';
 import { getAccessToken, getRefreshToken, saveTokens, clearTokens } from './authService';
 import navigate from './navigationService';
 import { API_URL } from '../constants';
@@ -11,7 +11,6 @@ const api = axios.create({
 
 async function refreshAccessToken() {
 	const refresh = await getRefreshToken();
-	console.log('refresh token:', refresh);
 	if (!refresh) throw new Error('No refresh token');
 
 	const response = await axios.post(`${API_URL}/accounts/token/refresh/`, { refresh });
@@ -94,8 +93,10 @@ export async function login(email, password) {
   
 export async function logout() {
     const refresh = await getRefreshToken();
-    await api.post('/accounts/logout/', { refresh });
+    const response = await api.post('/accounts/logout/', { refresh });
     await clearTokens();
+
+	return response.data;
 }
   
 export async function register(data) {
@@ -125,4 +126,16 @@ export async function fetchCollectionPoints(active) {
 	}
 	
 	return (await api.get('/eco-points/collection-points/inactive/')).data;
+}
+
+export async function changeStatusCollectionPoint(id, approved) {
+	const active = approved ? true : false;
+	const status = approved ? 'approved' : 'rejected';
+	const response = await api.patch(`/eco-points/collection-points/${id}/update-status/`, { is_active: active, status });
+	return response.data;
+}
+
+export async function createCategory(data) {
+	const response = await api.post('/eco-points/collection-type/', data);
+	return response.data;
 }

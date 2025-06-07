@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { Alert } from 'react-native';
-import { fetchCollectionTypes, fetchUserData, fetchCollectionPoints as fetchCollectionPointsApi } from '../services/api';
+import { fetchCollectionTypes as fetchCollectionTypesApi, fetchUserData as fetchUserDataApi, fetchCollectionPoints as fetchCollectionPointsApi } from '../services/api';
 
 export const DataContext = createContext();
 
@@ -12,27 +12,45 @@ export function DataProvider({ children }) {
 
     async function loadInitialData() {
         if (initialDataLoaded) return;
-        try {
-            const data = await fetchCollectionTypes();
-            setCollectionTypes(data);
 
-            const userData = await fetchUserData();
-            console.log('User Data:', userData);
-            setUserDetails(userData);
-            setInitialDataLoaded(true);
-        } catch (error) {
-            console.log(error.request);
-            Alert.alert('Erro', 'Erro interno ao carregar categorias');
-        }
+        await fetchCollectionTypes();
+
+        await fetchUserData();
+        setInitialDataLoaded(true);
     }
 
-    async function fetchCollectionPoints(active = true) {
+    async function fetchCollectionPoints(active) {
         try {
             const data = await fetchCollectionPointsApi(active);
             setCollectionPoints(data);
         } catch (error) {
             Alert.alert("Erro", "Erro interno ao carregar pontos de coleta");
         }
+    }
+
+    async function fetchCollectionTypes() {
+        try {
+            const data = await fetchCollectionTypesApi();
+            setCollectionTypes(data);
+        } catch (error) {
+            Alert.alert("Erro", "Erro interno ao carregar tipos de coleta");
+        }
+    }
+
+    async function fetchUserData() {
+        try {
+            const data = await fetchUserDataApi();
+            setUserDetails(data);
+        } catch (error) {
+            Alert.alert("Erro", "Erro interno ao carregar detalhes do usuário");
+        }
+    }
+
+    async function clearContextData() {
+        setCollectionTypes(null);
+        setCollectionPoints(null);
+        setUserDetails(null);
+        setInitialDataLoaded(false);
     }
 
     return (
@@ -42,7 +60,10 @@ export function DataProvider({ children }) {
             collectionPoints,
             fetchCollectionPoints,
             userDetails,
-            loadInitialData
+            loadInitialData,
+            fetchCollectionTypes,
+            fetchUserData,
+            clearContextData,
         }}
         >
             {children}
