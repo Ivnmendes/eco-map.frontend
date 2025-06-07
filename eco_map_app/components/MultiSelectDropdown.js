@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { DataContext } from '../context/DataContext';
+import { DataContext } from '../context/DataProvider';
 import DropDownPicker from 'react-native-dropdown-picker';
 
 export default function MultiSelectDropdown({ value, setValue, open, setOpen }) { 

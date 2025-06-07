@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 import { login } from '../services/api';
+
+import { NotificationContext } from '../context/NotificationContext';
 
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
@@ -12,6 +14,7 @@ export default function LoginScreen({ navigation }) {
         password: false,
         confirmPassword: false
     })
+    const { showNotification } = useContext(NotificationContext);
 
     const [showPassword, setShowPassword] = useState(false);
     
@@ -33,7 +36,7 @@ export default function LoginScreen({ navigation }) {
                 await login(email, password);
                 navigation.replace('Main');
             } catch (error) {
-                Alert.alert('Erro', 'Login falhou. Verifique suas credenciais.');
+                showNotification('error', 'Login falhou. Verifique suas credenciais.');
             } finally {
                 setLoading(false);
             }

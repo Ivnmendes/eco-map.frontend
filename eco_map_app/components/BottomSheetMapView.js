@@ -1,9 +1,9 @@
 import React, { useContext, useMemo, useState } from 'react';
-import { Image, View, StyleSheet, Text, ActivityIndicator, TouchableOpacity, Alert } from 'react-native'; 
+import { Image, View, StyleSheet, Text, ActivityIndicator, TouchableOpacity } from 'react-native'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 
-import { DataContext } from '../context/DataContext';
+import { DataContext } from '../context/DataProvider';
 import { useReverseGeocode } from '../hooks/useReverseGeocode';
 import { changeStatusCollectionPoint } from '../services/api'; 
 
@@ -32,6 +32,19 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
     const { collectionTypes } = useContext(DataContext);
     const { bottom: safeAreaBottom } = useSafeAreaInsets();
     const [isVerticalScrollDisabled, setIsVerticalScrollDisabled] = useState(false);
+    const [notification, setNotification] = useState({
+        visible: false,
+        message: '',
+        type: 'success',
+    });
+
+    const showNotification = (type, message) => {
+        setNotification({ visible: true, type, message });
+    };
+    
+    const handleDismissNotification = () => {
+        setNotification((prev) => ({ ...prev, visible: false }));
+    };
 
     const { address, isLoading: isAddressLoading } = useReverseGeocode(
         selectedMarker?.latitude,
@@ -98,7 +111,7 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
             setSelectedMarker(null);
         } catch (error) {
             const operation = value ? 'aceitar' : 'recusar';
-            Alert.alert('Erro', `Erro ao ${operation} ponto de coleta. Tente novamente.`);
+            showNotification('Erro', `Erro ao ${operation} ponto de coleta. Tente novamente.`);
         }
     }
 

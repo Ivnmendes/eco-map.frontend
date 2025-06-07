@@ -8,7 +8,8 @@ export default function FormBasicInfo({
     onFieldChange,
     isDropdownOpen,
     setIsDropdownOpen,
-    setValue
+    setValue,
+    showNotification,
 }) {
     return (
         <View style={styles.formContent}>
@@ -40,6 +41,7 @@ export default function FormBasicInfo({
             <ImagePickerComponent
                 images={values.images} 
                 setImages={(images) => onFieldChange('images', images)}
+                showNotification={showNotification}
             />
             <View style={[styles.fieldContainer, isDropdownOpen && styles.dropdownContainerOpen]}>
                 <MultiSelectDropdown 

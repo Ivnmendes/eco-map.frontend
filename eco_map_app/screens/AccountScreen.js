@@ -1,13 +1,15 @@
 import React, { useState, useContext } from 'react';
-import { View, StyleSheet, Text, Alert, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { logout } from '../services/api';
-import { DataContext } from '../context/DataContext';
+import { DataContext } from '../context/DataProvider';
+import { NotificationContext } from '../context/NotificationContext';
 
 export default function HomeScreen({ navigation }) {
     const [loading, setLoading] = useState(false);
+    const { showNotification } = useContext(NotificationContext);
     const { userDetails, clearContextData } = useContext(DataContext);
 
     const insets = useSafeAreaInsets();
@@ -20,7 +22,7 @@ export default function HomeScreen({ navigation }) {
             navigation.replace('Login');
         } catch (error) {
             console.log(error.response?.data || error.message);
-            Alert.alert('Erro', 'Ocorreu um erro interno');
+            showNotification('error', 'Ocorreu um erro interno');
         } finally {
             setLoading(false);
         }

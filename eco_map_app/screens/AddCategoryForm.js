@@ -1,20 +1,22 @@
-import React, { useState, useCallback } from 'react';
-import { Alert, StyleSheet, View, KeyboardAvoidingView, Platform, TouchableOpacity, Text, ScrollView, TextInput } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { StyleSheet, View, KeyboardAvoidingView, Platform, TouchableOpacity, Text, ScrollView, TextInput } from 'react-native';
 
 import { createCategory } from '../services/api';
+import { NotificationContext } from '../context/NotificationContext';
 
 export default function AddCategoryForm({ route, navigation }) {
     const [categoryName, setCategoryName] = useState('');
     const [categoryDescription, setCategoryDescription] = useState('');
+    const { showNotification } = useContext(NotificationContext);
 
     const handleSubmit = async () => {
         if (!categoryName || !categoryDescription) {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+            showNotification('error', 'Por favor, preencha todos os campos.');
             return;
         }
 
         await createCategory({name: categoryName, description: categoryDescription});
-        Alert.alert('Sucesso', 'Categoria adicionada com sucesso!');
+        showNotification('success', 'Categoria adicionada com sucesso!');
         navigation.goBack();
     };
 

@@ -9,7 +9,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 
-import { DataProvider } from './context/DataContext';
+import { DataProvider } from './context/DataProvider';
+import { NotificationProvider } from './context/NotificationContext';
 
 import MainTabs from './components/MainTabs';
 
@@ -44,30 +45,32 @@ export default function App() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <SafeAreaProvider>
-                <DataProvider>  
-                    <BottomSheetModalProvider>
-                        <NavigationContainer ref={navigationRef}>
-                            <Stack.Navigator screenOptions={{ headerShown: false }}>
-                            {isAuthenticated ? (
-                                <>
-                                <Stack.Screen name="Main" component={MainTabs} />
-                                <Stack.Screen name="Login" component={LoginScreen} />
-                                </>
-                            ) : (
-                                <>
-                                <Stack.Screen name="Login" component={LoginScreen} />
-                                <Stack.Screen name="Main" component={MainTabs} />
-                                </>
-                            )}
-                            <Stack.Screen name="Register" component={RegisterScreen} />
-                            <Stack.Screen name="AddPointForm" component={AddPointForm} />
-                            <Stack.Screen name="PointsList" component={ViewPointsScreen} />
-                            <Stack.Screen name="PointDetail" component={PointDetailScreen} />
-                            <Stack.Screen name="AddCategoryForm" component={AddCategoryForm} />
-                            </Stack.Navigator>
-                        </NavigationContainer>
-                    </BottomSheetModalProvider>
-                </DataProvider>
+                <NotificationProvider>
+                    <DataProvider>  
+                        <BottomSheetModalProvider>
+                            <NavigationContainer ref={navigationRef}>
+                                <Stack.Navigator screenOptions={{ headerShown: false }}>
+                                {isAuthenticated ? (
+                                    <>
+                                    <Stack.Screen name="Main" component={MainTabs} />
+                                    <Stack.Screen name="Login" component={LoginScreen} />
+                                    </>
+                                ) : (
+                                    <>
+                                    <Stack.Screen name="Login" component={LoginScreen} />
+                                    <Stack.Screen name="Main" component={MainTabs} />
+                                    </>
+                                )}
+                                <Stack.Screen name="Register" component={RegisterScreen} />
+                                <Stack.Screen name="AddPointForm" component={AddPointForm} />
+                                <Stack.Screen name="PointsList" component={ViewPointsScreen} />
+                                <Stack.Screen name="PointDetail" component={PointDetailScreen} />
+                                <Stack.Screen name="AddCategoryForm" component={AddCategoryForm} />
+                                </Stack.Navigator>
+                            </NavigationContainer>
+                        </BottomSheetModalProvider>
+                    </DataProvider>
+                </NotificationProvider>
             </SafeAreaProvider>
         </GestureHandlerRootView>
   );

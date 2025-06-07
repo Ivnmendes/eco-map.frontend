@@ -1,7 +1,7 @@
 import React, { useContext, useMemo } from 'react';
 import { Image, View, StyleSheet, Text, ActivityIndicator, FlatList, ScrollView, SafeAreaView } from 'react-native'; 
 
-import { DataContext } from '../context/DataContext';
+import { DataContext } from '../context/DataProvider';
 import { useReverseGeocode } from '../hooks/useReverseGeocode';
 
 function formatAddress(addressObject) {

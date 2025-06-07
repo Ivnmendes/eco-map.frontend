@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 import { register } from '../services/api';
+import { NotificationContext } from '../context/NotificationContext';
 
-export default function LoginScreen({ navigation }) {
+export default function RegisterScreen({ navigation }) {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -17,6 +18,7 @@ export default function LoginScreen({ navigation }) {
         password: false,
         confirmPassword: false,
     });
+    const { showNotification } = useContext(NotificationContext);
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -49,7 +51,7 @@ export default function LoginScreen({ navigation }) {
                 navigation.replace('Main');
             } catch (error) {
                 console.log(error.request)
-                Alert.alert('Erro', 'Registro de conta falhou. Verifique os campos.');
+                showNotification('error', 'Registro de conta falhou. Verifique os campos.');
             } finally {
                 setLoading(false);
             }

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import MapView, { Marker } from 'react-native-maps';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import BottomSheetMapView from './BottomSheetMapView';
 
 import { navigate } from '../services/navigationService';
@@ -10,7 +10,7 @@ const pinColors = {
     false: 'yellow',
 }
 
-export default function MapContainer({ region, mapRef, collectionPoints, filters, collectionTypes, isAdmin}) {
+export default function MapContainer({ region, mapRef, collectionPoints, filters, collectionTypes, isAdmin, showNotification }) {
     const [buttonPos, setButtonPos] = useState(null);
     const [latitude, setLatitude] = useState(null);
     const [longitude, setLongitude] = useState(null);
@@ -47,7 +47,7 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
                 longitude
             });
         } catch (error) {
-            Alert.alert('Erro', 'Não foi possível criar o ponto');
+            showNotification('error', 'Não foi possível criar o ponto');
             console.log(error)
         }
     }
@@ -111,6 +111,7 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
                 navigate={navigate}
                 bottomSheetRef={bottomSheetRef}
                 active={isAdmin}
+                showNotification={showNotification}
             />
         </View>
     );

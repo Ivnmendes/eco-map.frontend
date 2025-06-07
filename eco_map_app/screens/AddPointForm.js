@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
-import { Alert, StyleSheet, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Text, ScrollView, FlatList } from 'react-native';
+import React, { useState, useCallback, useContext } from 'react';
+import { StyleSheet, View, KeyboardAvoidingView, Platform, Keyboard, TouchableOpacity, Text, ScrollView, FlatList } from 'react-native';
 
 import FormBasicInfo from '../components/FormBasicInfo';
 import FormAddress from '../components/FormAddress';
 import FormOperatingHours from '../components/FormOperatingHours';
+import { NotificationContext } from '../context/NotificationContext';
 
 import { createCollectionPoint, uploadImageForPoint } from '../services/ecoPointService';
 
@@ -61,6 +62,7 @@ export default function AddPointForm({ route, navigation }) {
     const { latitude, longitude } = route.params || {};
     const [loading, setLoading] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const { showNotification } = useContext(NotificationContext);
     
     const [formData, setFormData] = useState({
         name: '',
@@ -133,18 +135,21 @@ export default function AddPointForm({ route, navigation }) {
 
             const newPoint = await createCollectionPoint(pointData);
 
-            Alert.alert("Ponto criado com sucesso", "fazendo upload de imagens...");
+            showNotification("success", "Ponto Criado com sucesso!\nAgora, realizando upload das imagens...");
             
             const uploadPromises = formData.images.map(imageAsset =>
                 uploadImageForPoint(newPoint.id, imageAsset)
             );
             await Promise.all(uploadPromises);
 
-            Alert.alert('Sucesso', 'Imagens adicionadas.');
-            navigation.replace('Main');
+            showNotification('success', 'Ponto de coleta adicionado com sucesso!');
+        
+            setTimeout(() => {
+                navigation.replace('Main');
+            }, 2000); 
         } catch (error) {
             console.log(error.response?.data || error.message);
-            Alert.alert('Erro', 'Falha ao adicionar ponto.');
+            showNotification('error', 'Falha ao adicionar ponto.');
         } finally {
             setLoading(false);
         }
@@ -153,7 +158,7 @@ export default function AddPointForm({ route, navigation }) {
     function nextStep() {
         if (step === 1) {
             if (!formData.name || !formData.description || formData.types.length === 0) {
-                alert('Preencha nome, descrição e selecione ao menos um tipo.');
+                showNotification('error', 'Preencha nome, descrição e ao menos um tipo.');
                 return;
             }
             if (withoutAddress) {
@@ -162,7 +167,7 @@ export default function AddPointForm({ route, navigation }) {
         }
         if (step === 2) {
             if (!formData.street || !formData.number || !formData.postcode || !formData.neighborhood) {
-                alert('Preencha todos os campos do endereço.');
+                showNotification('error', 'Preencha todos os campos do endereço.');
                 return;
             }
         }
@@ -194,6 +199,7 @@ export default function AddPointForm({ route, navigation }) {
                                 values={formData}
                                 onFieldChange={handleFieldChange}
                                 setValue={memoizedSetValue}
+                                showNotification={showNotification}
                             />
                         )}
                         {step === 2 && (

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Alert, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator, FlatList, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getUserCollectionPoints, deletePoint } from '../services/ecoPointService';
+
+import { NotificationContext } from '../context/NotificationContext';
 
 const convertPointStatus = (status) => {
     switch (status) {
@@ -62,6 +64,7 @@ export default function ViewPointsScreen({ navigation }) {
     const [points, setPoints] = useState([]);
     const [refetchTrigger, setRefetchTrigger] = useState(0);
     const insets = useSafeAreaInsets();
+    const { showNotification } = useContext(NotificationContext);
 
     useEffect(() => {
         const fetchData = async () => {  
@@ -71,7 +74,7 @@ export default function ViewPointsScreen({ navigation }) {
                 setPoints(pointRequest.results);
             } catch (error) {
                 console.log(error.response?.data || error.message);
-                Alert.alert('Erro', 'Ocorreu um erro ao carregar os pontos');
+                showNotification('error', 'Ocorreu um erro ao carregar os pontos');
             } finally {
                 setLoading(false);
             }
@@ -99,11 +102,11 @@ export default function ViewPointsScreen({ navigation }) {
                     onPress: async () => {
                         try {
                             await deletePoint(point.id);
-                            Alert.alert('Sucesso', 'Ponto deletado com sucesso');
+                            showNotification('success', 'Ponto deletado com sucesso');
                             setRefetchTrigger(prev => prev + 1);
                         } catch (error) {
                             console.log(error.response?.data || error.message);
-                            Alert.alert('Erro', 'Ocorreu um erro ao deletar o ponto');
+                            showNotification('error', 'Ocorreu um erro ao deletar o ponto');
                         }
                     },
                 },

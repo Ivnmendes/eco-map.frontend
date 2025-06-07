@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity, FlatList, Image
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image
  } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-export default function ImagePickerComponent({ images, setImages }) {
+export default function ImagePickerComponent({ images, setImages, showNotification }) {
     const [hasPermission, setHasPermission] = useState(null);
+    const [notification, setNotification] = useState({
+        visible: false,
+        message: '',
+        type: 'success',
+    });
 
     const requestPermission = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         setHasPermission(status === 'granted');
         if (!hasPermission) {
-            Alert.alert(
-                'Permissão necessária',
+            showNotification(
+                'error',
                 'Precisamos de permissão para acessar a galeria de imagens.'
             );
             return;
@@ -23,7 +28,7 @@ export default function ImagePickerComponent({ images, setImages }) {
             await requestPermission();
         }
         if (hasPermission === false) {
-            Alert.alert('Permissão negada', 'Você precisa permitir o acesso à galeria para selecionar uma imagem.');
+            showNotification('error', 'Você precisa permitir o acesso à galeria para selecionar uma imagem.');
             return;
         }
 

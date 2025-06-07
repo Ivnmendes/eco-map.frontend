@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { Alert } from 'react-native';
+
+import { NotificationContext } from './NotificationContext';
 import { fetchCollectionTypes as fetchCollectionTypesApi, fetchUserData as fetchUserDataApi, fetchCollectionPoints as fetchCollectionPointsApi } from '../services/api';
 
 export const DataContext = createContext();
@@ -24,7 +25,7 @@ export function DataProvider({ children }) {
             const data = await fetchCollectionPointsApi(active);
             setCollectionPoints(data);
         } catch (error) {
-            Alert.alert("Erro", "Erro interno ao carregar pontos de coleta");
+            showNotification("error", "Erro interno ao carregar pontos de coleta");
         }
     }
 
@@ -33,7 +34,7 @@ export function DataProvider({ children }) {
             const data = await fetchCollectionTypesApi();
             setCollectionTypes(data);
         } catch (error) {
-            Alert.alert("Erro", "Erro interno ao carregar tipos de coleta");
+            showNotification("error", "Erro interno ao carregar tipos de coleta");
         }
     }
 
@@ -42,7 +43,7 @@ export function DataProvider({ children }) {
             const data = await fetchUserDataApi();
             setUserDetails(data);
         } catch (error) {
-            Alert.alert("Erro", "Erro interno ao carregar detalhes do usuário");
+            showNotification("error", "Erro interno ao carregar detalhes do usuário");
         }
     }
 
