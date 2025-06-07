@@ -1,10 +1,11 @@
 import React, { useContext, useMemo, useState } from 'react';
-import { Image, View, StyleSheet, Text, ActivityIndicator, FlatList } from 'react-native'; 
+import { Image, View, StyleSheet, Text, ActivityIndicator, TouchableOpacity, Alert } from 'react-native'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 
 import { DataContext } from '../context/DataContext';
 import { useReverseGeocode } from '../hooks/useReverseGeocode';
+import { changeStatusCollectionPoint } from '../services/api'; 
 
 function formatAddress(addressObject) {
     if (!addressObject) return 'Endereço não disponível';
@@ -26,7 +27,7 @@ function formatAddress(addressObject) {
     return addressParts.join(', \n');
 };
 
-export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, bottomSheetRef}) {
+export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, bottomSheetRef, active }) {
     const snapPoints = useMemo(() => ['50%', '88%'], []);
     const { collectionTypes } = useContext(DataContext);
     const { bottom: safeAreaBottom } = useSafeAreaInsets();
@@ -91,6 +92,16 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
         return null;
     }
 
+    const handleButton = async (value) => {
+        try {
+            await changeStatusCollectionPoint(selectedMarker.id, value);
+            setSelectedMarker(null);
+        } catch (error) {
+            const operation = value ? 'aceitar' : 'recusar';
+            Alert.alert('Erro', `Erro ao ${operation} ponto de coleta. Tente novamente.`);
+        }
+    }
+
     return (
         <BottomSheetModal
             ref={bottomSheetRef}
@@ -145,6 +156,22 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
                     <Text style={styles.typesLabel}>Horário de Funcionamento:</Text>
                     {displayOperatingHours}
                 </View>
+                { active ? (
+                    <>
+                    <View style={styles.separator}/>
+                    <View style={styles.buttonsView}>
+                        <TouchableOpacity style={[styles.button, styles.refuseButton]} onPress={() => handleButton(false)}>
+                            <Text style={styles.buttonText}>Recusar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.button, styles.acceptButton]} onPress={() => handleButton(true)}>
+                            <Text style={styles.buttonText}>Aceitar</Text>
+                        </TouchableOpacity>
+                    </View>
+                    </>
+                ) : (
+                        <></>
+                    )
+                }
             </BottomSheetScrollView>
         </BottomSheetModal>
     );
@@ -159,7 +186,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 20,
     },
     handleIndicator: {
-        backgroundColor: 'green',
+        backgroundColor: '#256D5B',
         width: 40,
         height: 4,
         borderRadius: 2,
@@ -206,7 +233,7 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 16,
-        backgroundColor: 'green',
+        backgroundColor: '#256D5B',
         color: 'white',
         fontWeight: 'bold',
         overflow: 'hidden',
@@ -257,5 +284,28 @@ const styles = StyleSheet.create({
     },
     list: {
         flexGrow: 0,
-    }
+    },
+    buttonsView: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    button: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 8,
+        marginHorizontal: 5,
+        alignItems: 'center',
+    },
+    acceptButton: {
+        backgroundColor: '#256D5B',
+    },
+    refuseButton: {
+        backgroundColor: 'red',
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });

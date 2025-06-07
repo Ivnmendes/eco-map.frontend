@@ -91,7 +91,7 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
                             longitude: Number(point.longitude),
                         }}
                         onPress={() => handleMarkerPress(point)}
-                        pinColor={pinColors[collectionPoints.is_active]}
+                        pinColor={pinColors[point.is_active]}
                         />
                     );
                 })}
@@ -110,6 +110,7 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
                 setSelectedMarker={setSelectedMarker}
                 navigate={navigate}
                 bottomSheetRef={bottomSheetRef}
+                active={isAdmin}
             />
         </View>
     );

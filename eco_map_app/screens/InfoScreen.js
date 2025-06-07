@@ -26,7 +26,6 @@ export default function InfoScreen() {
         const allowedBaseHost = 'www.santamaria.rs.gov.br/descarte-legal';
 
         if (request.url.includes(allowedBaseHost)) {
-            console.log('Navegação permitida para:', request.url);
             return true;
         }
 
@@ -95,7 +94,7 @@ export default function InfoScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'green',
+        backgroundColor: '#256D5B',
     },
     webView: {
         flex: 1,

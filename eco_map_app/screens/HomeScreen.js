@@ -7,7 +7,6 @@ import { DataContext } from '../context/DataContext';
 import CollectionTypeCarousel from '../components/CollectionTypeCarousel';
 import MapContainer from '../components/MapContainer';
 import FloatingButtons from '../components/FloatingButtons';
-import { reload } from 'expo-router/build/global-state/routing';
 
 export default function HomeScreen({ navigation }) {
     const [loadingLocation, setLoadingLocation] = useState(false);
@@ -35,12 +34,12 @@ export default function HomeScreen({ navigation }) {
 
     async function reloadFetchCollectionPoints() {
         setLoadingPoints(true);
-        await fetchCollectionPoints(isAdmin);
+        await fetchCollectionPoints(!isAdmin);
         setLoadingPoints(false);
     }
 
     useEffect(() => {
-        reloadFetchCollectionPoints(!isAdmin);
+        reloadFetchCollectionPoints(isAdmin);
     }, [isAdmin]);
 
     useEffect(() => {

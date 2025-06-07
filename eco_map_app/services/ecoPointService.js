@@ -104,7 +104,7 @@ export async function reverseGeocodeApi(latitude, longitude) {
 };
 
 export async function getUserCollectionPoints(page) {
-    const response = await api.get('/eco-points/collection-points/my-pending/', {
+    const response = await api.get('/eco-points/collection-points/my-submits/', {
         params: { page }
     });
     if (response.status !== 200) {
