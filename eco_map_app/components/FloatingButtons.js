@@ -1,96 +1,110 @@
 import React, { useState, useRef } from 'react';
-import { TouchableOpacity, StyleSheet, Animated, ActivityIndicator } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Animated, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-
-export default function FloatingButtons({ loadingLocation, loadingPoints, onUpdateLocation, onReloadPoints, onAddPoint, isStaff, isAdmin, setIsAdmin }) {
+export default function FloatingButtons({
+    loadingLocation,
+    loadingPoints,
+    onUpdateLocation,
+    onReloadPoints,
+    onAddPoint,
+    isStaff,
+    isAdmin,
+    setIsAdmin,
+}) {
     const [expanded, setExpanded] = useState(false);
     const animation = useRef(new Animated.Value(0)).current;
 
-    const toggleExpand = () => {
-        animation.stopAnimation(() => {
-            Animated.timing(animation, {
-                toValue: expanded ? 0 : 1,
-                duration: 350,
-                useNativeDriver: true,
-            }).start(() => {
-                setExpanded(!expanded);
-            });
+    const toggleMenu = () => {
+        const toValue = expanded ? 0 : 1;
+        Animated.timing(animation, {
+            toValue,
+            duration: 300,
+            useNativeDriver: true, 
+        }).start(() => {
+            setExpanded(!expanded);
         });
     };
 
-    const getButtonStyle = (offsetY) => ({
+    const rotation = animation.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '135deg'],
+    });
+
+    const getAnimatedButtonStyle = (index) => ({
         opacity: animation,
         transform: [
             {
                 translateY: animation.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, -offsetY],
+                    outputRange: [0, -(index * 70 + 70)],
                 }),
             },
         ],
     });
 
     return (
-        <>
+        <View 
+            style={styles.container}
+        >
             <TouchableOpacity
-                style={[styles.floatingButton, styles.floatingButtonUpdate]}
+                style={[styles.floatingButton, styles.locateButton]}
                 onPress={onUpdateLocation}
                 disabled={loadingLocation}
+                onStartShouldSetResponder={() => true}
             >
-                {loadingLocation ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                    <Ionicons name="locate-outline" size={28} color="#fff" />
-                )}
+                {loadingLocation ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="locate" size={24} color="#fff" />}
             </TouchableOpacity>
 
-            <TouchableOpacity
-                style={[styles.floatingButton, styles.floatingButtonExpand]}
-                onPress={toggleExpand}
-            >
-                <Ionicons name={expanded ? 'close' : 'ellipsis-vertical'} size={28} color="#fff" />
-            </TouchableOpacity>
-
-            <Animated.View pointerEvents={expanded ? 'auto' : 'none'} style={[styles.animatedButtonContainer, getButtonStyle(220)]}>
-                <TouchableOpacity style={styles.floatingButton} onPress={onReloadPoints} disabled={loadingPoints}>
-                    {loadingPoints ? (
-                        <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                        <Ionicons name="reload-outline" size={28} color="#fff" />
-                    )}
+            <Animated.View style={[styles.secondaryButtonContainer, getAnimatedButtonStyle(0)]}>
+                <TouchableOpacity style={styles.floatingButton} onPress={onReloadPoints} disabled={loadingPoints} onStartShouldSetResponder={() => true}>
+                    {loadingPoints ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="refresh" size={24} color="#fff" />}
                 </TouchableOpacity>
             </Animated.View>
-
-            <Animated.View pointerEvents={expanded ? 'auto' : 'none'} style={[styles.animatedButtonContainer, getButtonStyle(300)]}>
-                <TouchableOpacity style={styles.floatingButton} onPress={onAddPoint}>
-                    <Ionicons name="add-circle-outline" size={28} color="#fff" />
+            
+            <Animated.View style={[styles.secondaryButtonContainer, getAnimatedButtonStyle(1)]}>
+                <TouchableOpacity style={styles.floatingButton} onPress={onAddPoint} onStartShouldSetResponder={() => true}>
+                    <Ionicons name="add" size={28} color="#fff" />
                 </TouchableOpacity>
             </Animated.View>
 
             {isStaff && (
-                <Animated.View pointerEvents={expanded ? 'auto' : 'none'} style={[styles.animatedButtonContainer, getButtonStyle(380)]}>
-                    <TouchableOpacity style={styles.floatingButton} onPress={() => {
-                            setIsAdmin(!isAdmin)
-                        }
-                    }>
-                        <Ionicons name="settings-outline" size={28} color="#fff" />
+                <Animated.View style={[styles.secondaryButtonContainer, getAnimatedButtonStyle(2)]}>
+                    <TouchableOpacity 
+                        style={[styles.floatingButton, isAdmin && styles.adminActive]}
+                        onPress={() => setIsAdmin(!isAdmin)}
+                        onStartShouldSetResponder={() => true}
+                    >
+                        <Ionicons name="shield-checkmark-outline" size={24} color="#fff" />
                     </TouchableOpacity>
                 </Animated.View>
             )}
-            
-        </>
+
+            <TouchableOpacity
+                style={[styles.floatingButton, styles.mainButton]}
+                onPress={toggleMenu}
+                onStartShouldSetResponder={() => true}
+            >
+                <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+                    <Ionicons name="add" size={32} color="#fff" />
+                </Animated.View>
+            </TouchableOpacity>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    floatingButton: {
+    container: {
         position: 'absolute',
+        bottom: '1%',
         right: 20,
+        alignItems: 'center',
+    },
+    floatingButton: {
         backgroundColor: '#256D5B',
-        width: 56,
-        height: 56,
-        borderRadius: 28,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         justifyContent: 'center',
         alignItems: 'center',
         elevation: 5,
@@ -99,17 +113,18 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3,
         shadowRadius: 3,
     },
-    floatingButtonUpdate: {
-        bottom: 140,
-        right: 20,
+    mainButton: {
     },
-    floatingButtonExpand: {
-        bottom: 220,
-        right: 20,
-    },
-    animatedButtonContainer: {
+    locateButton: {
         position: 'absolute',
-        right: 0,
-        bottom: 140,
+        right: 80, 
+    },
+    secondaryButtonContainer: {
+        position: 'absolute',
+        right: 0, 
+        bottom: 0,
+    },
+    adminActive: {
+        backgroundColor: '#c4a20e',
     },
 });

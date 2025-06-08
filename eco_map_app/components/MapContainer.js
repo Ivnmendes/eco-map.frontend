@@ -25,9 +25,6 @@ export default function MapContainer({ region, mapRef, collectionPoints, filters
     };
 
     async function handleMapPress(event) {
-        if (selectedMarker) {
-            bottomSheetRef.current?.close();
-        }
         if (buttonPos !== null) {
             setButtonPos(null);
             setLatitude(null);

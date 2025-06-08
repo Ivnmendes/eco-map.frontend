@@ -1,39 +1,50 @@
+import React from 'react';
 import { FlatList, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function CollectionTypeCarousel({ collectionTypes, selectedCategoryTypes, setSelectedCategoryTypes, }) {
-    function handleSelect(id) {
+export default function CollectionTypeCarousel({ collectionTypes, selectedCategoryTypes, setSelectedCategoryTypes }) {
+    const { top: safeAreaTop } = useSafeAreaInsets();
+    const handleSelect = (id) => {
         setSelectedCategoryTypes((prev) =>
-            prev.includes(id) ? prev : [...prev, id]
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
         );
-    }
+    };
 
-    function handleDeselect(id) {
-        setSelectedCategoryTypes((prev) => prev.filter((item) => item !== id));
-    }
+    const clearFilters = () => {
+        setSelectedCategoryTypes([]);
+    };
 
-    function renderItem({ item }) {
+    const renderItem = ({ item }) => {
         const isSelected = selectedCategoryTypes.includes(item.id);
         return (
             <TouchableOpacity
-                onPress={isSelected ? () => handleDeselect(item.id) : () => handleSelect(item.id)}
+                onPress={() => handleSelect(item.id)}
                 style={[styles.button, isSelected && styles.buttonSelected]}
             >
                 <Ionicons name={item.icon || 'layers-outline'} size={18} color={isSelected ? '#fff' : '#333'} />
                 <Text style={[styles.text, isSelected && styles.textSelected]}>{item.name}</Text>
             </TouchableOpacity>
         );
-    }
+    };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { top: safeAreaTop }]}>
             <FlatList
                 horizontal
                 data={collectionTypes}
                 keyExtractor={item => String(item.id)}
                 renderItem={renderItem}
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 10 }}
+                contentContainerStyle={styles.listContentContainer}
+                ListHeaderComponent={
+                    selectedCategoryTypes.length > 0 ? (
+                        <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
+                            <Ionicons name="close-circle-outline" size={18} color="#C8E6C9" />
+                            <Text style={styles.clearButtonText}>Limpar</Text>
+                        </TouchableOpacity>
+                    ) : null
+                }
             />
         </View>
     );
@@ -42,37 +53,57 @@ export default function CollectionTypeCarousel({ collectionTypes, selectedCatego
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        top: 50,
         left: 0,
         right: 0,
-        paddingVertical: 10,
-        height: 53,
         zIndex: 10,
+        paddingVertical: 8,
+    },
+    listContentContainer: {
+        paddingHorizontal: 10,
+        alignItems: 'center',
     },
     button: {
-        backgroundColor: '#f0f0f0',
+        backgroundColor: '#fff',
+        borderColor: '#ddd',
+        borderWidth: 1,
         borderRadius: 20,
         paddingHorizontal: 15,
         paddingVertical: 8,
         marginHorizontal: 5,
         flexDirection: 'row',
         alignItems: 'center',
-        elevation: 5,
+        elevation: 2,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
     },
     buttonSelected: {
         backgroundColor: '#256D5B',
+        borderColor: '#256D5B',
     },
     text: {
         marginLeft: 8,
         color: '#333',
         fontWeight: '500',
-        fontSize: 12,
+        fontSize: 14,
     },
     textSelected: {
         color: '#fff',
+    },
+    clearButton: {
+        backgroundColor: '#4a6b63',
+        borderRadius: 20,
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        marginHorizontal: 5,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    clearButtonText: {
+        marginLeft: 6,
+        color: '#C8E6C9',
+        fontWeight: 'bold',
+        fontSize: 14,
     },
 });

@@ -28,10 +28,6 @@ export default function HomeScreen({ navigation }) {
         }
     }
 
-    function handleViewPoints() {
-        navigation.navigate('PointsList');
-    }
-
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <Image source={require('../assets/logo.png')} style={styles.image} />
@@ -48,9 +44,6 @@ export default function HomeScreen({ navigation }) {
             </View>
             <View style={styles.separator}/>
             <View style={styles.buttonsView}>
-                <TouchableOpacity onPress={handleViewPoints} disabled={loading} style={styles.button}>
-                    <Text style={styles.buttonText}>Ver pontos submetidos</Text>
-                </TouchableOpacity>
                 {userDetails.is_staff && (
                     <TouchableOpacity onPress={() => navigation.navigate('AddCategoryForm')} disabled={loading} style={styles.button}>
                         <Text style={styles.buttonText}>Adicionar categoria</Text>
