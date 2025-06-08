@@ -237,8 +237,6 @@ export default function AddPointForm({ route, navigation }) {
     );
 }
 
-
-// --- Styles ---
 const styles = StyleSheet.create({
     safeArea: { 
         flex: 1, 

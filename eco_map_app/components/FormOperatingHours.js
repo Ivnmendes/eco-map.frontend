@@ -3,7 +3,6 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-nativ
 import CheckBox from 'expo-checkbox';
 
 export default function FormOperatingHours({ operatingHours, onOperatingHoursChange, DAYS_OF_WEEK_CONFIG }) {
-
     const handleCheckBoxChange = (dayId) => {
         const dayData = operatingHours[dayId];
         const newSelectedState = !dayData.selected;
@@ -31,10 +30,29 @@ export default function FormOperatingHours({ operatingHours, onOperatingHoursCha
     };
 
     const formatTime = (text) => {
-        const cleaned = text.replace(/[^\d]/g, '');
-        if (cleaned.length <= 2) return cleaned;
-        if (cleaned.length <= 4) return `${cleaned.slice(0, 2)}:${cleaned.slice(2)}`;
-        return `${cleaned.slice(0, 2)}:${cleaned.slice(2, 4)}`;
+        const cleaned = text.replace(/\D/g, '').slice(0, 4);
+
+        if (cleaned.length === 0) return '';
+
+        let hours = cleaned.slice(0, 2);
+        let minutes = cleaned.slice(2);
+
+        if (hours.length === 2) {
+            let h = parseInt(hours, 10);
+            if (h > 23) h = 23;
+            hours = h.toString().padStart(2, '0');
+        }
+
+        if (minutes.length === 2) {
+            let m = parseInt(minutes, 10);
+            if (m > 59) m = 59;
+            minutes = m.toString().padStart(2, '0');
+        }
+
+        if (minutes.length > 0) {
+            return `${hours}:${minutes}`;
+        }
+        return hours;
     };
 
     const renderDayRow = (day, isUtilityDay = false) => {

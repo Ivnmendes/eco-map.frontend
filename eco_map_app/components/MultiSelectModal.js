@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     handle: {
         width: 50,
         height: 5,
-        backgroundColor: '#CCC',
+        backgroundColor: '#256D5B',
         borderRadius: 2.5,
     },
     modalTitle: {

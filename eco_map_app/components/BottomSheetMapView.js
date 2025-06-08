@@ -2,10 +2,13 @@ import React, { useContext, useMemo, useState } from 'react';
 import { Image, View, StyleSheet, Text, ActivityIndicator, TouchableOpacity } from 'react-native'; 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheetFlatList, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { Ionicons } from '@expo/vector-icons';
 
 import { DataContext } from '../context/DataProvider';
 import { useReverseGeocode } from '../hooks/useReverseGeocode';
 import { changeStatusCollectionPoint } from '../services/api'; 
+import { NotificationContext } from '../context/NotificationContext';
+import ImageViewerModal from './ImageViewerModal'; 
 
 function formatAddress(addressObject) {
     if (!addressObject) return 'Endereço não disponível';
@@ -28,71 +31,48 @@ function formatAddress(addressObject) {
 };
 
 export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, bottomSheetRef, active }) {
-    const snapPoints = useMemo(() => ['50%', '88%'], []);
+    const snapPoints = useMemo(() => ['50%', '87%'], []);
     const { collectionTypes } = useContext(DataContext);
+    const { showNotification } = useContext(NotificationContext);
     const { bottom: safeAreaBottom } = useSafeAreaInsets();
-    const [isVerticalScrollDisabled, setIsVerticalScrollDisabled] = useState(false);
-    const [notification, setNotification] = useState({
-        visible: false,
-        message: '',
-        type: 'success',
-    });
-
-    const showNotification = (type, message) => {
-        setNotification({ visible: true, type, message });
-    };
     
-    const handleDismissNotification = () => {
-        setNotification((prev) => ({ ...prev, visible: false }));
-    };
+    const [actionLoading, setActionLoading] = useState(null);
+    const [isImageViewerVisible, setImageViewerVisible] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
     const { address, isLoading: isAddressLoading } = useReverseGeocode(
         selectedMarker?.latitude,
         selectedMarker?.longitude
     );
+    
+    const openImageViewer = (index) => {
+        setSelectedImageIndex(index);
+        setImageViewerVisible(true);
+    };
 
     const displayedTypes = useMemo(() => {
         if (!selectedMarker || !Array.isArray(selectedMarker.types) || !Array.isArray(collectionTypes?.results)) {
-            return <Text style={styles.typesLabel}>Carregando tipos...</Text>;
-        }
-        if (selectedMarker.types.length === 0) {
-            return <Text style={styles.typesLabel}>Não especificado</Text>;
+            return <Text>Carregando...</Text>;
         }
         const foundTypes = selectedMarker.types
             .map(typeId => collectionTypes.results.find(t => t.id === typeId))
             .filter(Boolean);
         return foundTypes.map(type => (
-            <Text key={type.id} style={styles.markerTypeChip}>
-                {type.name}
-            </Text>
+            <Text key={type.id} style={styles.markerTypeChip}>{type.name}</Text>
         ));
     }, [selectedMarker, collectionTypes]);
 
     const displayOperatingHours = useMemo(() => {
-        const days = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-
-        if (!selectedMarker || !selectedMarker.operating_hours) {
-            return <Text style={styles.typesLabel}>Horário não disponível</Text>;
+        if (!selectedMarker?.operating_hours?.length) {
+            return <Text style={styles.noDataText}>Horário não disponível</Text>;
         }
-        const operatingHours = selectedMarker.operating_hours;
-        if (Array.isArray(operatingHours) && operatingHours.length > 0) {
-            return operatingHours.map((day, index) => (
-                <View key={day.day_of_week} style={styles.dayContainer} >
-                    <Text style={styles.dayText}>
-                        {days[day.day_of_week - 1]}:
-                    </Text>
-                    <Text style={styles.hourText}>
-                        {day.opening_time.slice(0, 5)}
-                    </Text>
-                    <Text style={styles.hourSeparator}> - </Text>
-                    <Text style={styles.hourText}>
-                        {day.closing_time.slice(0, 5)}
-                    </Text>
-                </View>
-            ));
-        } else {
-            return <Text style={styles.typesLabel}>Horário não disponível</Text>;
-        }
+        const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+        return selectedMarker.operating_hours.map((day) => (
+            <View key={day.day_of_week} style={styles.dayContainer}>
+                <Text style={styles.dayText}>{days[day.day_of_week - 1]}:</Text>
+                <Text style={styles.hourText}>{day.opening_time.slice(0, 5)} - {day.closing_time.slice(0, 5)}</Text>
+            </View>
+        ));
     }, [selectedMarker]);  
 
     function handleSheetChanges(index) {
@@ -101,101 +81,125 @@ export default function BottomSheetMapView({ selectedMarker, setSelectedMarker, 
         }
     };
 
+    const handleAction = async (approve) => {
+        const actionType = approve ? 'accept' : 'refuse';
+        setActionLoading(actionType);
+        try {
+            await changeStatusCollectionPoint(selectedMarker.id, approve);
+            showNotification('success', `Ponto ${approve ? 'aprovado' : 'recusado'} com sucesso.`);
+            bottomSheetRef.current?.close();
+        } catch (error) {
+            showNotification('error', `Erro ao ${actionType === 'accept' ? 'aceitar' : 'recusar'} o ponto.`);
+        } finally {
+            setActionLoading(null);
+        }
+    }
+
     if (!selectedMarker) {
         return null;
     }
 
-    const handleButton = async (value) => {
-        try {
-            await changeStatusCollectionPoint(selectedMarker.id, value);
-            setSelectedMarker(null);
-        } catch (error) {
-            const operation = value ? 'aceitar' : 'recusar';
-            showNotification('Erro', `Erro ao ${operation} ponto de coleta. Tente novamente.`);
-        }
-    }
-
     return (
-        <BottomSheetModal
-            ref={bottomSheetRef}
-            index={0} 
-            snapPoints={snapPoints}
-            onChange={handleSheetChanges}
-            enablePanDownToClose={true}
-            handleIndicatorStyle={styles.handleIndicator} 
-            backgroundStyle={styles.bottomSheetBackground}
-            bottomInset={safeAreaBottom}
-        >
-            <BottomSheetScrollView contentContainerStyle={styles.scrollViewContentContainer} scrollEnabled={!isVerticalScrollDisabled}>
-                <Text style={styles.markerTitle}>{selectedMarker.name || 'Ponto de Coleta'}</Text>
-                <View style={styles.addressContainer}>
-                    {isAddressLoading ? (
-                        <ActivityIndicator size="small" color="#555" />
-                    ) : (
-                        <Text style={styles.markerAddress}>
-                            {formatAddress(address)}
-                        </Text>
-                    )}
-                </View>
-                <View style={styles.separator}/>
-                <View style={styles.typesContainer}>
-                    <Text style={styles.typesLabel}>Tipos:</Text>
-                    <View style={styles.markerTypesView}>
-                        {displayedTypes}
-                    </View>
-                </View>
-                <View style={styles.separator}/>
-                <View style={{ height: 210, marginBottom: 16 }}>
-                    <BottomSheetFlatList
-                        data={selectedMarker.images || []}
-                        renderItem={({ item, index }) => (
-                            <View style={{ marginRight: index === selectedMarker.images.length - 1 ? 0 : 10 }}>
-                                <Image source={{ uri: item.image }} style={styles.pointImage} />
-                            </View>
+        <>
+            <BottomSheetModal
+                ref={bottomSheetRef}
+                index={0} 
+                snapPoints={snapPoints}
+                onChange={handleSheetChanges}
+                enablePanDownToClose={true}
+                handleIndicatorStyle={styles.handleIndicator} 
+                backgroundStyle={styles.bottomSheetBackground}
+                bottomInset={safeAreaBottom}
+            >
+                <BottomSheetScrollView contentContainerStyle={styles.scrollViewContentContainer}>
+                    <Text style={styles.markerTitle}>{selectedMarker.name}</Text>
+                    
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Ionicons name="location-outline" size={20} color="#333" />
+                            <Text style={styles.sectionTitle}>Endereço</Text>
+                        </View>
+                        {isAddressLoading ? (
+                            <ActivityIndicator size="small" color="#555" />
+                        ) : (
+                            <Text style={styles.addressText}>{formatAddress(address)}</Text>
                         )}
-                        keyExtractor={(item) => item.id.toString()}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        nestedScrollEnabled
-                        contentContainerStyle={{ paddingRight: 20 }}
-                        style={styles.list}
-                        onScrollBeginDrag={() => setIsVerticalScrollDisabled(true)}
-                        onScrollEndDrag={() => setIsVerticalScrollDisabled(false)}
-                        removeClippedSubviews={false}
-                    />
-                </View>
-                <View style={styles.separator}/>
-                <View style={styles.opratingHoursContainer}>
-                    <Text style={styles.typesLabel}>Horário de Funcionamento:</Text>
-                    {displayOperatingHours}
-                </View>
-                { active ? (
-                    <>
-                    <View style={styles.separator}/>
-                    <View style={styles.buttonsView}>
-                        <TouchableOpacity style={[styles.button, styles.refuseButton]} onPress={() => handleButton(false)}>
-                            <Text style={styles.buttonText}>Recusar</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={[styles.button, styles.acceptButton]} onPress={() => handleButton(true)}>
-                            <Text style={styles.buttonText}>Aceitar</Text>
-                        </TouchableOpacity>
                     </View>
-                    </>
-                ) : (
-                        <></>
-                    )
-                }
-            </BottomSheetScrollView>
-        </BottomSheetModal>
+                    
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Ionicons name="information-circle-outline" size={20} color="#333" />
+                            <Text style={styles.sectionTitle}>Descrição</Text>
+                        </View>
+                        <Text style={styles.addressText}>
+                            {selectedMarker.description || 'Nenhuma descrição disponível.'}
+                        </Text>
+                    </View>
+
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Ionicons name="pricetags-outline" size={18} color="#333" />
+                            <Text style={styles.sectionTitle}>Tipos</Text>
+                        </View>
+                        <View style={styles.markerTypesView}>{displayedTypes}</View>
+                    </View>
+
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Ionicons name="image-outline" size={18} color="#333" />
+                            <Text style={styles.sectionTitle}>Galeria</Text>
+                        </View>
+                        <BottomSheetFlatList
+                            data={selectedMarker.images || []}
+                            renderItem={({ item, index }) => (
+                                <TouchableOpacity onPress={() => openImageViewer(index)}>
+                                    <Image source={{ uri: item.image }} style={styles.pointImage} />
+                                </TouchableOpacity>
+                            )}
+                            keyExtractor={(item) => item.id.toString()}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            scrollEnabled={false}
+                            ListEmptyComponent={<Text style={styles.noDataText}>Nenhuma imagem.</Text>}
+                        />
+                    </View>
+                
+                    <View style={styles.section}>
+                        <View style={styles.sectionHeader}>
+                            <Ionicons name="time-outline" size={20} color="#333" />
+                            <Text style={styles.sectionTitle}>Funcionamento</Text>
+                        </View>
+                        {displayOperatingHours}
+                    </View>
+                    
+                    {active && (
+                        <View style={styles.buttonsView}>
+                            <TouchableOpacity style={[styles.button, styles.refuseButton]} onPress={() => handleAction(false)} disabled={!!actionLoading}>
+                                {actionLoading === 'refuse' ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Recusar</Text>}
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.button, styles.acceptButton]} onPress={() => handleAction(true)} disabled={!!actionLoading}>
+                                {actionLoading === 'accept' ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Aceitar</Text>}
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </BottomSheetScrollView>
+            </BottomSheetModal>
+            <ImageViewerModal
+                images={selectedMarker.images}
+                initialIndex={selectedImageIndex}
+                isVisible={isImageViewerVisible}
+                onClose={() => setImageViewerVisible(false)}
+            />
+        </>
     );
 }
 
 const styles = StyleSheet.create({
-    bottomSheetBackground: { 
+    bottomSheetBackground: {
         borderColor: '#888',
         borderWidth: 1,
-        backgroundColor: '#f8f4f4', 
-        borderTopLeftRadius: 20, 
+        backgroundColor: '#f8f4f4',
+        borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
     },
     handleIndicator: {
@@ -203,37 +207,36 @@ const styles = StyleSheet.create({
         width: 40,
         height: 4,
         borderRadius: 2,
-        alignSelf: 'center', 
-        marginVertical: 8,   
     },
     scrollViewContentContainer: {
-        paddingHorizontal: 20, 
+        paddingHorizontal: 20,
         paddingTop: 10,
         paddingBottom: 40,
     },
     markerTitle: {
-        fontSize: 20, 
+        fontSize: 22,
         fontWeight: 'bold',
-        marginBottom: 8,
+        marginBottom: 16,
         color: '#333',
     },
-    addressContainer: {
-        minHeight: 20, 
+    section: {
+        marginBottom: 16,
     },
-    markerAddress: {
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+        marginLeft: 8,
+    },
+    addressText: {
         fontSize: 15,
         color: '#555',
         lineHeight: 22,
-        marginBottom: 8,
-    },
-    typesContainer: {
-        marginBottom: 5,
-    },
-    typesLabel: {
-        fontSize: 16, 
-        fontWeight: '500',
-        marginBottom: 8,
-        color: '#333',
     },
     markerTypesView: {
         flexDirection: 'row',
@@ -241,80 +244,60 @@ const styles = StyleSheet.create({
     },
     markerTypeChip: {
         fontSize: 14,
-        marginBottom: 8, 
+        marginBottom: 8,
         marginRight: 8,
         paddingVertical: 6,
         paddingHorizontal: 12,
         borderRadius: 16,
-        backgroundColor: '#256D5B',
-        color: 'white',
+        backgroundColor: '#E8F5E9',
+        color: '#256D5B',
         fontWeight: 'bold',
         overflow: 'hidden',
     },
     pointImage: {
-        width: 366,
-        height: 200,
+        width: 150,
+        height: 110,
         borderRadius: 10,
-        marginBottom: 16,
+        marginRight: 10,
         backgroundColor: '#e0e0e0',
     },
-    separator: {
-        height: 1,
-        backgroundColor: '#333',
-        marginBottom: 13,
-    },
-    opratingHoursContainer: {
-        marginBottom: 20,
+    noDataText: {
+        fontSize: 15,
+        color: '#888',
+        fontStyle: 'italic',
     },
     dayContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 25,
-        paddingLeft: 5,
+        marginBottom: 8,
     },
     dayText: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: 'bold',
         color: '#333',
-        width: 80,
-        marginRight: 5,
+        width: 40,
     },
     hourText: {
-        fontSize: 16,
+        fontSize: 15,
         color: '#555',
-        backgroundColor: '#c0c0c0',
-        borderRadius: 5,
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-    },
-    hourSeparator: {
-        fontSize: 16,
-        color: '#555',
-        marginHorizontal: 5,
-    },
-    opratingHoursContainer: {
-        marginBottom: 20,
-    },
-    list: {
-        flexGrow: 0,
     },
     buttonsView: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 20,
+        marginTop: 10,
     },
     button: {
         flex: 1,
-        paddingVertical: 12,
-        borderRadius: 8,
-        marginHorizontal: 5,
+        paddingVertical: 14,
+        borderRadius: 10,
         alignItems: 'center',
+        marginHorizontal: 5,
     },
     acceptButton: {
         backgroundColor: '#256D5B',
     },
     refuseButton: {
-        backgroundColor: 'red',
+        backgroundColor: '#A4243B',
     },
     buttonText: {
         color: 'white',

@@ -2,6 +2,18 @@ import React from 'react';
 import { View, Text, TextInput, StyleSheet, Animated } from 'react-native';
 
 export default function FormAddress({ values, errors, onFieldChange, shakeAnimations }) {
+    const formatCEP = (cep) => {
+        const cleaned = cep.replace(/[^\d]/g, '');
+    
+        const truncated = cleaned.slice(0, 8);
+    
+        if (truncated.length > 5) {
+            return `${truncated.slice(0, 5)}-${truncated.slice(5)}`;
+        }
+    
+        return truncated;
+    };
+
     return (
         <View style={styles.formContent}>
             <Text style={styles.title}>Endereço</Text>
@@ -41,13 +53,14 @@ export default function FormAddress({ values, errors, onFieldChange, shakeAnimat
                         {errors.postcode && <Text style={styles.errorText}>(obrigatório)</Text>}
                     </View>
                     <Animated.View style={[{ transform: [{ translateX: shakeAnimations.postcode }] }]}>
-                        <TextInput
-                            placeholder="Ex: 97105-900"
-                            value={values.postcode}
-                            onChangeText={(text) => onFieldChange('postcode', text)}
-                            style={[styles.input, errors.postcode && styles.inputError]}
-                            keyboardType="numeric"
-                        />
+                    <TextInput
+                        placeholder="Ex: 97105-900"
+                        value={values.postcode}
+                        onChangeText={(text) => onFieldChange('postcode', formatCEP(text))}
+                        style={[styles.input, errors.postcode && styles.inputError]}
+                        keyboardType="numeric"
+                        maxLength={9}
+                    />
                     </Animated.View>
                 </View>
             </View>

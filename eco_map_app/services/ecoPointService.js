@@ -120,3 +120,11 @@ export async function deletePoint(pointId) {
     }
     return response.data;
 }
+
+export async function getPointDetails(pointId) {
+    const response = await api.get(`/eco-points/collection-points/${pointId}/`);
+    if (response.status !== 200) {
+        throw new Error('Erro ao obter detalhes do ponto de coleta');
+    }
+    return response.data;
+}
