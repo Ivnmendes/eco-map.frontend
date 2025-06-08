@@ -3,238 +3,142 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-nativ
 import CheckBox from 'expo-checkbox';
 
 export default function FormOperatingHours({ operatingHours, onOperatingHoursChange, DAYS_OF_WEEK_CONFIG }) {
+
     const handleCheckBoxChange = (dayId) => {
         const dayData = operatingHours[dayId];
         const newSelectedState = !dayData.selected;
 
-        if (dayId === 8) {
-            onOperatingHoursChange(dayId, { selected: newSelectedState, open: '', close: '' });
-
-            const timeToApply = { open: operatingHours[8].open, close: operatingHours[8].close };
+        if (dayId === 8) { 
+            onOperatingHoursChange(dayId, { selected: newSelectedState, open: operatingHours[dayId].open, close: operatingHours[dayId].close });
             for (let id = 1; id <= 5; id++) {
-                onOperatingHoursChange(id, newSelectedState ? timeToApply : {});
+                onOperatingHoursChange(id, { selected: newSelectedState, open: operatingHours[dayId].open, close: operatingHours[dayId].close });
             }
         } else {
-            onOperatingHoursChange(dayId, { 
-                selected: newSelectedState,
-                open: newSelectedState ? dayData.open : '',
-                close: newSelectedState ? dayData.close : '',
-            });
+            onOperatingHoursChange(dayId, { selected: newSelectedState });
         }
     };
 
     const handleTimeChange = (dayId, timeType, value) => {
-        if (dayId === 8) {
-            onOperatingHoursChange(dayId, { [timeType]: value });
-            
-            if (operatingHours[8].selected) {
-                for (let id = 1; id <= 5; id++) {
-                    onOperatingHoursChange(id, { [timeType]: value });
-                }
+        const formattedTime = formatTime(value);
+        if (dayId === 8 && operatingHours[8].selected) {
+            onOperatingHoursChange(dayId, { [timeType]: formattedTime });
+            for (let id = 1; id <= 5; id++) {
+                onOperatingHoursChange(id, { [timeType]: formattedTime });
             }
         } else {
-            onOperatingHoursChange(dayId, { [timeType]: value });
+            onOperatingHoursChange(dayId, { [timeType]: formattedTime });
         }
     };
 
     const formatTime = (text) => {
-        const cleaned = text.replace(/\D/g, '').slice(0, 4);
+        const cleaned = text.replace(/[^\d]/g, '');
+        if (cleaned.length <= 2) return cleaned;
+        if (cleaned.length <= 4) return `${cleaned.slice(0, 2)}:${cleaned.slice(2)}`;
+        return `${cleaned.slice(0, 2)}:${cleaned.slice(2, 4)}`;
+    };
 
-        if (cleaned.length === 0) return '';
-
-        let hours = cleaned.slice(0, 2);
-        let minutes = cleaned.slice(2);
-
-        if (hours.length === 2) {
-            let h = parseInt(hours, 10);
-            if (h > 23) h = 23;
-            hours = h.toString().padStart(2, '0');
-        }
-
-        if (minutes.length === 2) {
-            let m = parseInt(minutes, 10);
-            if (m > 59) m = 59;
-            minutes = m.toString().padStart(2, '0');
-        }
-
-        if (minutes.length > 0) {
-            return `${hours}:${minutes}`;
-        }
-        return hours;
+    const renderDayRow = (day, isUtilityDay = false) => {
+        const dayData = operatingHours[day.id];
+        return (
+            <View key={day.id} style={[styles.dayRow, dayData.selected && styles.dayRowSelected]}>
+                <TouchableOpacity style={styles.checkboxContainer} onPress={() => handleCheckBoxChange(day.id)}>
+                    <CheckBox value={dayData.selected} onValueChange={() => handleCheckBoxChange(day.id)} color={dayData.selected ? '#256D5B' : '#888'} />
+                    <Text style={styles.dayLabel}>{day.label}</Text>
+                </TouchableOpacity>
+                <View style={styles.timeInputsContainer}>
+                    <TextInput
+                        style={[styles.dayInput, !dayData.selected && styles.dayInputDisabled]}
+                        value={dayData.open}
+                        onChangeText={(text) => handleTimeChange(day.id, 'open', text)}
+                        placeholder="Abre"
+                        maxLength={5}
+                        keyboardType="numeric"
+                        editable={dayData.selected}
+                    />
+                    <TextInput
+                        style={[styles.dayInput, !dayData.selected && styles.dayInputDisabled]}
+                        value={dayData.close}
+                        onChangeText={(text) => handleTimeChange(day.id, 'close', text)}
+                        placeholder="Fecha"
+                        maxLength={5}
+                        keyboardType="numeric"
+                        editable={dayData.selected}
+                    />
+                </View>
+            </View>
+        );
     };
 
     return (
         <View style={styles.formContent}>
-            <Text style={styles.sectionTitle}>Horário de funcionamento:</Text>
-            <View style={styles.twoColumnContainer}>
-                {DAYS_OF_WEEK_CONFIG.map((day) => {
-                    const dayData = operatingHours[day.id] || { selected: false, open: '', close: '' };
-                    
-                    return (
-                        <View key={day.id} style={styles.dayEntrySectionColumnItemContainer}>
-                            <TouchableOpacity 
-                                style={styles.dayEntrySectionColumnItem}
-                                onPress={() => handleCheckBoxChange(day.id)}
-                            >
-                                <View key={day.id} style={styles.dayEntryWrapper}>
-                                    <View style={styles.dayLabelCheckboxRow}>
-                                        <Text style={styles.dayLabel}>{day.label}</Text>
-                                        <CheckBox
-                                            style={styles.checkBox}
-                                            value={dayData.selected}
-                                            onValueChange={() => handleCheckBoxChange(day.id)}
-                                            color={dayData.selected ? '#256D5B' : undefined}
-                                        />
-                                    </View>
-                                    {dayData.selected && (
-                                        <View style={styles.timeInputsContainer}>
-                                            <View style={styles.inputGroup}>
-                                                <Text style={styles.inputLabel}>Abre:</Text>
-                                                <TextInput
-                                                    style={styles.dayInput}
-                                                    value={dayData.open}
-                                                    onChangeText={(text) => handleTimeChange(day.id, 'open', formatTime(text))}
-                                                    placeholder="HH:MM"
-                                                    maxLength={5}
-                                                    keyboardType="numeric"
-                                                />
-                                            </View>
-                                            <View style={styles.inputGroup}>
-                                                <Text style={styles.inputLabel}>Fecha:</Text>
-                                                <TextInput
-                                                    style={styles.dayInput}
-                                                    value={dayData.close}
-                                                    onChangeText={(text) => handleTimeChange(day.id, 'close', formatTime(text))}
-                                                    placeholder="HH:MM"
-                                                    maxLength={5} 
-                                                    keyboardType="numeric"
-                                                />
-                                            </View>
-                                        </View>
-                                    )}
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                    );
-                })}
-                <View style={styles.dayEntrySectionColumnItemContainer}>
-                    <TouchableOpacity 
-                        style={styles.dayEntrySectionColumnItem}
-                        onPress={() => handleCheckBoxChange(8)}
-                    >
-                        <View style={styles.dayEntryWrapper}>
-                            <View style={styles.dayLabelCheckboxRow}>
-                                <Text style={styles.dayLabel}>Dias úteis</Text>
-                                <CheckBox
-                                    style={styles.checkBox}
-                                    value={operatingHours[8].selected}
-                                    onValueChange={() => handleCheckBoxChange(8)}
-                                    color={operatingHours[8].selected ? '#256D5B' : undefined}
-                                />
-                            </View>
-                            {operatingHours[8].selected && (
-                                <View style={styles.timeInputsContainer}>
-                                    <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>Abre:</Text>
-                                        <TextInput
-                                            style={styles.dayInput}
-                                            value={operatingHours[8].open}
-                                            onChangeText={(text) => handleTimeChange(8, 'open', formatTime(text))}
-                                            placeholder="HH:MM"
-                                            maxLength={5}
-                                            keyboardType="numeric"
-                                        />
-                                    </View>
-                                    <View style={styles.inputGroup}>
-                                        <Text style={styles.inputLabel}>Fecha:</Text>
-                                        <TextInput
-                                            style={styles.dayInput}
-                                            value={operatingHours[8].close}
-                                            onChangeText={(text) => handleTimeChange(8, 'close', formatTime(text))}
-                                            placeholder="HH:MM"
-                                            maxLength={5}
-                                            keyboardType="numeric"
-                                        />
-                                    </View>
-                                </View>
-                            )}
-                        </View>
-                    </TouchableOpacity>
-                </View>
-            </View>
+            <Text style={styles.title}>Horário de Funcionamento</Text>
+            {DAYS_OF_WEEK_CONFIG.map(day => renderDayRow(day))}
+            <View style={styles.separator} />
+            {renderDayRow({ id: 8, label: 'Dias úteis' }, true)}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     formContent: {
-        flex: 1,
-        justifyContent: 'flex-start', 
-        paddingHorizontal: 20,
+        paddingHorizontal: 24,
     },
-    twoColumnContainer: {
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    dayRow: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        padding: 10,
-    },
-    dayEntrySectionColumnItemContainer: {
-        height: 130,
-        marginBottom: 10,
-        width: '45%',
-    },
-    dayEntrySectionColumnItem: {
-        width: '100%',
-        marginBottom: 10,
-    },
-    dayEntryWrapper: {
-        flexDirection: 'column',
-        padding: 10,
-        marginVertical: 5,
-        borderWidth: 1,
-        borderColor: '#888',
-        borderRadius: 8,
-        width: '100%',
-        backgroundColor: '#f8f4f4',
-    },
-    dayLabelCheckboxRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+        paddingHorizontal: 10,
         marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#DDD',
+        borderRadius: 8,
+        backgroundColor: '#FFF',
+    },
+    dayRowSelected: {
+        borderColor: '#256D5B',
+        backgroundColor: '#F0F8F5',
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1.2,
     },
     dayLabel: {
         fontSize: 16,
-        fontWeight: 'bold',
-    },
-    checkBox: {
-        marginLeft: 10,
-        borderRadius: 10
+        marginLeft: 12,
+        color: '#333',
     },
     timeInputsContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 10,
-    },
-    inputGroup: {
-        flexDirection: 'column',
-    },
-    inputLabel: {
-        fontSize: 14,
-        marginBottom: 5,
+        flex: 1,
+        justifyContent: 'flex-end',
     },
     dayInput: {
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#CCC',
         borderRadius: 5,
         paddingHorizontal: 10,
         height: 40,
-        width: 66,
+        width: 75,
+        textAlign: 'center',
+        marginLeft: 8,
+        backgroundColor: '#FFF',
     },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        marginLeft: 5,
+    dayInputDisabled: {
+        backgroundColor: '#F0F0F0',
+        color: '#AAA',
+    },
+    separator: {
+        height: 1,
+        backgroundColor: '#DDD',
+        marginVertical: 15,
     },
 });

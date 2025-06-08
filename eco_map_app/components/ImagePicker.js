@@ -1,41 +1,23 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image
- } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ImagePickerComponent({ images, setImages, showNotification }) {
-    const [hasPermission, setHasPermission] = useState(null);
-    const [notification, setNotification] = useState({
-        visible: false,
-        message: '',
-        type: 'success',
-    });
-
-    const requestPermission = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        setHasPermission(status === 'granted');
-        if (!hasPermission) {
-            showNotification(
-                'error',
-                'Precisamos de permissão para acessar a galeria de imagens.'
-            );
-            return;
-        }
-    };
 
     const pickImage = async () => {
-        if (hasPermission === null) {
-            await requestPermission();
-        }
-        if (hasPermission === false) {
-            showNotification('error', 'Você precisa permitir o acesso à galeria para selecionar uma imagem.');
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            showNotification(
+                'error',
+                'É necessário permitir o acesso à galeria de imagens.'
+            );
             return;
         }
 
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsMultipleSelection: true,
-            allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
         });
@@ -45,28 +27,27 @@ export default function ImagePickerComponent({ images, setImages, showNotificati
         }
     };
 
-    const handleRemoveImage = (indexToRemove) => {
-        const newImages = images.filter((_, index) => index !== indexToRemove);
-        setImages(newImages);
+    const handleRemoveImage = (uriToRemove) => {
+        setImages(prevImages => prevImages.filter((image) => image.uri !== uriToRemove));
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.label}>Selecionar imagens:</Text>
             <TouchableOpacity onPress={pickImage} style={styles.button}>
-                <Text style={styles.buttonText}>Escolher Imagens</Text>
+                <Ionicons name="camera-outline" size={22} color="#FFFFFF" />
+                <Text style={styles.buttonText}>Adicionar Imagens</Text>
             </TouchableOpacity>
 
             <FlatList
                 data={images}
-                renderItem={({ item, index }) => (
+                renderItem={({ item }) => (
                     <View style={styles.imageContainer}>
                         <Image source={{ uri: item.uri }} style={styles.image} />
                         <TouchableOpacity 
                             style={styles.removeButton}
-                            onPress={() => handleRemoveImage(index)}
+                            onPress={() => handleRemoveImage(item.uri)}
                         >
-                            <Text style={styles.removeButtonText}>X</Text>
+                            <Ionicons name="close" size={20} color="white" />
                         </TouchableOpacity>
                     </View>
                 )}
@@ -81,41 +62,34 @@ export default function ImagePickerComponent({ images, setImages, showNotificati
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: 'flex-start',
         marginBottom: 20,
     },
-    label: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
     button: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: '#256D5B',
-        padding: 10,
-        borderRadius: 10,
+        paddingVertical: 12,
+        borderRadius: 8,
     },
     buttonText: {
         color: '#FFFFFF',
         textAlign: 'center',
         fontWeight: 'bold',
         fontSize: 16,
+        marginLeft: 8,
     },
-    image: {
-        width: 200,
-        height: 200,
-        marginTop: 20,
-        borderRadius: 10,
+    list: {
+        marginTop: 10,
     },
     imageContainer: {
         position: 'relative',
-        marginTop: 10,
-        marginHorizontal: 10,
+        marginRight: 10,
     },
     image: {
-        width: 150,
-        height: 150,
-        borderRadius: 10,
+        width: 100,
+        height: 100,
+        borderRadius: 8,
     },
     removeButton: {
         position: 'absolute',
@@ -127,10 +101,5 @@ const styles = StyleSheet.create({
         height: 30,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    removeButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
     },
 });

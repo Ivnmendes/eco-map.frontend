@@ -1,115 +1,118 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Animated } from 'react-native';
 
-
-export default function FormAddress({
-    values,
-    onFieldChange,
-}) {
+export default function FormAddress({ values, errors, onFieldChange, shakeAnimations }) {
     return (
         <View style={styles.formContent}>
-            <View style={styles.textContainer}>
-                <Text style={styles.text}>Insira o endereço:</Text>
+            <Text style={styles.title}>Endereço</Text>
+            
+            <View style={styles.labelContainer}>
+                <Text style={styles.label}>Rua</Text>
+                {errors.street && <Text style={styles.errorText}>(obrigatório)</Text>}
             </View>
-            <View style={styles.fieldContainer}>
-                <View style={styles.labelContainer}>
-                    <Text style={styles.label}>Rua</Text>
-                </View>
+            <Animated.View style={[{ transform: [{ translateX: shakeAnimations.street }] }]}>
                 <TextInput
-                    placeholder="ex: Rua Brasil"
+                    placeholder="Ex: Av. Roraima"
                     value={values.street}
                     onChangeText={(text) => onFieldChange('street', text)}
-                    style={styles.input}
+                    style={[styles.input, errors.street && styles.inputError]}
                 />
-            </View>
-            <View style={styles.fieldContainer}>
-                <View style={styles.numberPostcodeContainer}>
-                    <View style={styles.fieldWrapper}>
-                        <View style={styles.textContainerNumber}>
-                            <Text style={styles.label}>Número</Text>
-                        </View>
+            </Animated.View>
+
+            <View style={styles.rowContainer}>
+                <View style={styles.fieldWrapper}>
+                    <View style={styles.labelContainer}>
+                        <Text style={styles.label}>Número</Text>
+                        {errors.number && <Text style={styles.errorText}>(obrigatório)</Text>}
+                    </View>
+                    <Animated.View style={[{ transform: [{ translateX: shakeAnimations.number }] }]}>
                         <TextInput
-                            placeholder="ex: 1299"
+                            placeholder="Ex: 1000"
                             value={values.number}
                             onChangeText={(text) => onFieldChange('number', text)}
-                            style={[styles.input, styles.numberInput]}
+                            style={[styles.input, errors.number && styles.inputError]}
                             keyboardType="numeric"
                         />
+                    </Animated.View>
+                </View>
+                <View style={styles.fieldWrapper}>
+                    <View style={styles.labelContainer}>
+                        <Text style={styles.label}>CEP</Text>
+                        {errors.postcode && <Text style={styles.errorText}>(obrigatório)</Text>}
                     </View>
-                    <View style={styles.fieldWrapper}>
-                        <View style={styles.textContainerNumber}>
-                            <Text style={styles.label}>CEP</Text>
-                        </View>
+                    <Animated.View style={[{ transform: [{ translateX: shakeAnimations.postcode }] }]}>
                         <TextInput
-                            placeholder="ex: 97105-030"
+                            placeholder="Ex: 97105-900"
                             value={values.postcode}
                             onChangeText={(text) => onFieldChange('postcode', text)}
-                            style={[styles.input, styles.postcodeInput]}
+                            style={[styles.input, errors.postcode && styles.inputError]}
                             keyboardType="numeric"
                         />
-                    </View>
+                    </Animated.View>
                 </View>
             </View>
-            <View style={styles.fieldContainer}>
-                <View style={styles.labelContainer}>
-                    <Text style={styles.label}>Bairro</Text>
-                </View>
+
+            <View style={styles.labelContainer}>
+                <Text style={styles.label}>Bairro</Text>
+                {errors.neighborhood && <Text style={styles.errorText}>(obrigatório)</Text>}
+            </View>
+            <Animated.View style={[{ transform: [{ translateX: shakeAnimations.neighborhood }] }]}>
                 <TextInput
-                    placeholder="ex: Camobi"
+                    placeholder="Ex: Camobi"
                     value={values.neighborhood}
                     onChangeText={(text) => onFieldChange('neighborhood', text)}
-                    style={styles.input}
+                    style={[styles.input, errors.neighborhood && styles.inputError]}
                 />
-            </View>
+            </Animated.View>
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     formContent: {
-        flex: 1,
-        justifyContent: 'flex-start', 
-        paddingHorizontal: '10%',
+        paddingHorizontal: 24,
     },
-    textContainer: {
-        marginBottom: 20,
-    },
-    text: {
-        fontSize: 18,
+    title: {
+        fontSize: 24,
         fontWeight: 'bold',
-    },
-    fieldContainer: {
+        color: '#333',
         marginBottom: 20,
+        textAlign: 'center',
     },
     labelContainer: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
         marginBottom: 5,
     },
     label: {
         fontSize: 16,
-        fontWeight: '600',
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 12,
+        marginLeft: 8,
     },
     input: {
-        height: 40,
-        borderColor: '#ccc',
+        width: '100%',
         borderWidth: 1,
-        borderRadius: 5,
-        paddingHorizontal: 10,
+        backgroundColor: '#FFF',
+        borderColor: '#CCC',
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        borderRadius: 8,
+        fontSize: 16,
+        marginBottom: 16,
     },
-    numberPostcodeContainer: {
+    inputError: {
+        borderColor: '#E53E3E',
+    },
+    rowContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
     fieldWrapper: {
         flex: 1,
         marginRight: 10,
-    },
-    textContainerNumber: {
-        marginBottom: 5,
-    },
-    numberInput: {
-        width: '100%',
-    },
-    postcodeInput: {
-        width: '100%',
     },
 });
