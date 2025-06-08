@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -57,7 +57,11 @@ export default function HomeScreen({ navigation }) {
                     </TouchableOpacity>
                 )}
                 <TouchableOpacity onPress={handleLogout} disabled={loading} style={styles.button}>
-                    <Text style={styles.buttonText}>{loading ? 'Carregando...' : 'Sair'}</Text>
+                    {loading ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text style={styles.buttonText}>Sair</Text>
+                    )}
                 </TouchableOpacity>
             </View>
         </View>
